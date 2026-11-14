@@ -1,0 +1,3 @@
+# Preservar bytes dos originais e migrations auditados por SHA-256.
+# Evita conversao CRLF/LF durante clone, inclusive com core.autocrlf=true.
+* -text

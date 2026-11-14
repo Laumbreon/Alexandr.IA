@@ -1,0 +1,11 @@
+--- a/backend/controllers/login.controller.js
++++ b/backend/controllers/login.controller.js
+@@ -15,7 +15,7 @@
+       req.session.authExpiresAt = Date.now() + SESSION_MS;
+       req.session.csrfToken = sessions.token();
+       await new Promise((resolve, reject) => req.session.save((error) => error ? reject(error) : resolve()));
+-      return res.status(200).json({ success: true, redirect: '/area' });
++      return res.status(200).json({ success: true, redirect: '/painel/' });
+     } catch (error) {
+       // Não tentar salvar novamente ao enviar a resposta de uma falha de persistência.
+       req.session = undefined;

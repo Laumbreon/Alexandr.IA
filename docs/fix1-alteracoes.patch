@@ -1,0 +1,45 @@
+--- a/login/cadastro.html
++++ b/login/cadastro.html
+@@ -34,7 +34,7 @@
+                 </div>
+                 <div class="form-group">
+                     <label for="password">Senha</label>
+-                    <input type="password" id="password" placeholder="Mínimo de 8 caracteres" autocomplete="new-password" minlength="8" required>
++                    <input type="password" id="password" placeholder="De 15 a 128 caracteres" autocomplete="new-password" minlength="15" required>
+                 </div>
+                 <div class="form-actions">
+                     <button type="submit" class="login-btn">Cadastrar</button>
+--- a/login/cadastro.js
++++ b/login/cadastro.js
+@@ -13,8 +13,9 @@
+             alert('Por favor, preencha todos os campos.');
+             return;
+         }
+-        if (password.length < 8) {
+-            alert('A senha deve ter no mínimo 8 caracteres.');
++        const passwordLength = [...password].length;
++        if (passwordLength < 15 || passwordLength > 128) {
++            alert('A senha deve ter de 15 a 128 caracteres; espaços são permitidos.');
+             return;
+         }
+ 
+@@ -37,7 +38,7 @@
+             }
+         } catch (error) {
+             console.error('Erro de conexão ou requisição:', error);
+-            alert('Não foi possível conectar ao servidor. Verifique se o Flask está rodando.');
++            alert('Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.');
+         } finally {
+             button.disabled = false;
+             button.textContent = 'Cadastrar';
+--- a/backend/controllers/cadastro.controller.js
++++ b/backend/controllers/cadastro.controller.js
+@@ -8,7 +8,7 @@
+       await register(data);
+       return res.status(201).json({
+         success: true,
+-        message: 'Cadastro realizado. O login ainda não está disponível nesta etapa.',
++        message: 'Cadastro realizado. Você já pode entrar com seu e-mail e senha.',
+       });
+     } catch (error) {
+       if (error.status === 400 || error.status === 503) {

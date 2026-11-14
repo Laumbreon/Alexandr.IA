@@ -1,0 +1,24 @@
+{
+  "phase": "2.0B.2",
+  "previousManifestSha256": "b1d20b92ee1893f6e8444d0afde43393ee00ef154cc2dee05d944ec6655b4132",
+  "changes": {
+    "package.json": {
+      "before": "2e6f3ba99dbd8a4d567d2f058699451326aa73e3d95fb6a9e555654a99d4f7f2",
+      "after": "77a5b3fb21d02db922c4be907e424cfb30f1af64b93ac7e2368cbb2c853ef089"
+    },
+    "pnpm-lock.yaml": {
+      "before": "610af74478eb196e44490528e0650e8a037d7582b46ceab5b2b622f0bdaa5b5a",
+      "after": "29bc10aa2c01860993e798d79d25d0ef07e06d5dd6ec7a6468d8e070a34c550b"
+    },
+    "src/App.tsx": {
+      "before": "c1e230c81eb640ef8aa1e216191da881e273c3a3cb3bef3d479a6edaeb6180bf",
+      "after": "d367ac8303b7380c441a2347af6f6779e9c084171fc9dfa64071f849a2ec14fa"
+    }
+  },
+  "added": {
+    "src/services/auth.ts": "924b1c5a80ab85ab62838a888f857cb24926ccc26112934a3888f672c7d65722",
+    "src/hooks/useAuth.ts": "37ed66e6ec887c063da8e19bb5cd359abaa553771f54a45810b9dfd533e72cd4",
+    "src/components/AuthGate.tsx": "45063b17c1ca8d520e721feb9a47746aed86800b10734a3c7e84532209f90952",
+    "src/components/LogoutButton.tsx": "b5ccfe3cf07f10bd969302a94bedf596eff82967b84c3c251659c54568633d21"
+  }
+}

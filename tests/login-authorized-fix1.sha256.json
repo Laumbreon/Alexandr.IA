@@ -1,0 +1,14 @@
+{
+  "phase": "1.5H FIX.1",
+  "originalManifestSha256": "d492189c20b5fef30813a5af5017d078b57a30f26c7edcad3c43fba939693b38",
+  "changes": {
+    "cadastro.html": {
+      "before": "712bb4b24de9ff45d8be8e28140c9c8de0adbdc399fa75b40df3f7f3bd6d9bbf",
+      "after": "a8c69641a12ca7a25dd86263280648193724e1f1e560e7e394b5065dffbaeb8f"
+    },
+    "cadastro.js": {
+      "before": "e38db09a2920d10e3d6dff8a1026513a2470c8d9e78a6661a99b7727e429f1b8",
+      "after": "1152ffd6e0bb583ee939442c53149db2c21b6126a7720b0daccafee9dba80ace"
+    }
+  }
+}

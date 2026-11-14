@@ -1,0 +1,23 @@
+{
+  "name": "alexandr-ia",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Servidor local do módulo de acesso",
+  "scripts": {
+    "start": "node backend/server.js",
+    "test": "node --test",
+    "db:check": "node scripts/db-check.js",
+    "db:migrate": "node scripts/migrate.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "argon2": "0.44.0",
+    "connect-pg-simple": "10.0.0",
+    "express": "5.3.0",
+    "express-rate-limit": "8.7.4",
+    "express-session": "1.19.0",
+    "pg": "8.23.1"
+  }
+}

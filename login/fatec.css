@@ -1,0 +1,85 @@
+:root {
+    --fatec-red: #C00000;
+    --fatec-red-dark: #8A0000;
+    --fatec-black: #1A1A1A;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+
+body {
+    background-image: linear-gradient(135deg, var(--fatec-red), var(--fatec-red-dark));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.login-container { width: 100%; max-width: 420px; padding: 20px; }
+
+.login-card {
+    background: #fff;
+    border-radius: 8px;
+    border-top: 6px solid var(--fatec-black);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    padding: 36px 40px;
+    text-align: center;
+}
+
+.brand { margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+.brand-logo { color: var(--fatec-red); font-size: 44px; font-weight: 900; letter-spacing: 4px; line-height: 1; }
+.brand-city { color: var(--fatec-black); font-size: 18px; font-weight: 700; margin-top: 4px; }
+.brand-inst { color: #666; font-size: 12px; margin-top: 10px; line-height: 1.5; }
+
+.welcome-message { margin-bottom: 24px; }
+.welcome-message h2 { color: var(--fatec-black); font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.welcome-message p { color: #666; font-size: 14px; font-weight: 300; }
+
+.form-group { margin-bottom: 18px; text-align: left; }
+.form-group label { display: block; color: var(--fatec-black); font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+.form-group input:focus {
+    outline: none;
+    border-color: var(--fatec-red);
+    box-shadow: 0 0 0 3px rgba(192, 0, 0, 0.12);
+}
+
+.form-actions { margin-top: 28px; }
+
+.login-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--fatec-red);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.login-btn:hover:not(:disabled) { background: var(--fatec-red-dark); }
+.login-btn:focus-visible { outline: 3px solid var(--fatec-black); outline-offset: 2px; }
+.login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.esqueci-btn, .cadastro-btn, .voltar-btn {
+    color: var(--fatec-black);
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.esqueci-btn, .voltar-btn { display: inline-block; margin-top: 15px; }
+.cadastro-btn { font-weight: 500; }
+.esqueci-btn:hover, .cadastro-btn:hover, .voltar-btn:hover { color: var(--fatec-red); text-decoration: underline; }
+.cadastro-text { margin-top: 12px; color: #666; font-size: 14px; }
+
+.mensagem-escondida { display: none; }
+.mensagem-visivel { display: block; padding: 14px; margin-top: 20px; border-radius: 4px; font-size: 14px; text-align: center; }
+.mensagem-sucesso { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.mensagem-erro { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }

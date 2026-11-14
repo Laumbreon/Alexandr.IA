@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fatec Botucatu - Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/fatec.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <header class="brand">
+                <div class="brand-logo">FATEC</div>
+                <div class="brand-city">Botucatu</div>
+                <p class="brand-inst">Faculdade de Tecnologia de Botucatu<br>Centro Paula Souza</p>
+            </header>
+
+            <div class="welcome-message">
+                <h2>Bem-vindo</h2>
+                <p>Acesse sua conta para continuar</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" placeholder="seu.nome@aluno.cps.sp.gov.br" autocomplete="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" placeholder="Insira sua senha" autocomplete="current-password" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="login-btn">Entrar</button>
+                    <a href="/esqueci-senha" class="esqueci-btn">Esqueci a senha</a>
+                    <p class="cadastro-text">Não possui conta? <a class="cadastro-btn" href="/cadastro">Criar conta</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/login.js"></script>
+</body>
+</html>

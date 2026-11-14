@@ -1,0 +1,25 @@
+{
+  "phase": "2.0B.3",
+  "previousManifestSha256": "9070936cfab14605027755199d612706cd85c24e85ceaa31f5fdc8a0e18a631b",
+  "changes": {
+    "src/App.tsx": {
+      "before": "d367ac8303b7380c441a2347af6f6779e9c084171fc9dfa64071f849a2ec14fa",
+      "after": "941eeaf99b9b01cc34be10654a574e656d60b6585a9f7c8523f2e578eb56fb16"
+    },
+    "src/index.css": {
+      "before": "b64e228d3217dd8490ec37c03ce59aee5acab05a8cd4f044addd2bbd37126813",
+      "after": "cdb4f964d8657c45316d44b7fe67e3bcded83cba2ee018beac3d9eb244a14474"
+    },
+    "src/components/AuthGate.tsx": {
+      "before": "45063b17c1ca8d520e721feb9a47746aed86800b10734a3c7e84532209f90952",
+      "after": "776cebccc3976564b2457e58b8f498ca924d181ca58075343ef0be4e4be4b16b"
+    },
+    ".figma/make/site.json": {
+      "before": "cdefdbab179c9c49c37fe5a7a10ab9d2e3e2de3df9ec43cce94769827e6c3775",
+      "after": "79679bc7ee003161f2b4ab1e2021b8d173574eb3ecaa3e9b512a30a087b7b9fb"
+    }
+  },
+  "added": {
+    "src/hooks/useNavigation.ts": "80e570c8915f4abe36b6072a575f768b5b0d171dfba68b66e17b353631cb9422"
+  }
+}

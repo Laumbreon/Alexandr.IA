@@ -1,0 +1,22 @@
+{
+  "phase": "2.0B.1",
+  "originalImportManifestSha256": "fe5ecf40a67d5539981ce62816f64f33dffc3625ef914406f22a70eefa0cec84",
+  "changes": {
+    ".figma/make/site.json": {
+      "before": "3343b9612205710d2e0a5b2997df9a5136a834b2a8f6bb2f8ef32723c025b2ee",
+      "after": "cdefdbab179c9c49c37fe5a7a10ab9d2e3e2de3df9ec43cce94769827e6c3775"
+    },
+    ".mise.toml": {
+      "before": "6d2834ef5f78a7dc4c384570a62b895137fdf63df171d237f0747932bd001435",
+      "after": "f2c93c53b1b2ce9bb09cde605ef49f0ba4cc8b5e9b4dfdb9bbf5833ea8742e32"
+    },
+    "src/App.tsx": {
+      "before": "ac1b14c4e512b027fc5982939df9fc93b433022d1c4f3f9411aa8aa6fc8b9edc",
+      "after": "c1e230c81eb640ef8aa1e216191da881e273c3a3cb3bef3d479a6edaeb6180bf"
+    },
+    "vite.config.ts": {
+      "before": "be29e610d47a493ebda54af8f700087d390c73bd07c81a652120bc443365c9f2",
+      "after": "2681187a5d9be7b9aac70d9809a7a793d5f3d01fc6fd685f3215f0dc287500e4"
+    }
+  }
+}

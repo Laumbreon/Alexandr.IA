@@ -1,0 +1,12 @@
+{
+  "description": "Alexandr.IA: acesso autenticado e painel demonstrativo de biblioteca com dados fictícios.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  },
+  "title": "Alexandr.IA",
+  "language": "pt-BR"
+}
