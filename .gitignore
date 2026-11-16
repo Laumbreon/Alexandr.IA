@@ -38,6 +38,7 @@ Thumbs.db
 # Pacotes de origem locais: fontes e hashes ja estao documentados.
 /*.zip
 /frontend/dist/
+/frontend/dist-demo/
 # Configuracoes pessoais de editores/agentes.
 /.vscode/
 /.idea/

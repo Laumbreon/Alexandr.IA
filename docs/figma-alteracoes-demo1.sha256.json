@@ -1,0 +1,23 @@
+{
+  "phase": "DEMO.1",
+  "previousManifestSha256": "c41c43f2b13df891a3e03651f9adb874107517c4c83e96577faca568d32c039a",
+  "changes": {
+    "src/App.tsx": {
+      "before": "941eeaf99b9b01cc34be10654a574e656d60b6585a9f7c8523f2e578eb56fb16",
+      "after": "bb7080ae1531f4a14638bad59614175392424ca1009b7dc64e1153f2880b24ff"
+    },
+    "vite.config.ts": {
+      "before": "2681187a5d9be7b9aac70d9809a7a793d5f3d01fc6fd685f3215f0dc287500e4",
+      "after": "ca690a4e0ea35a59db28c77d97d20eba2f00621212db1a44dec0e5d1fe79c78c"
+    },
+    "package.json": {
+      "before": "77a5b3fb21d02db922c4be907e424cfb30f1af64b93ac7e2368cbb2c853ef089",
+      "after": "688239c9be8650cc8e4b03f3d9362dd0d87daf049886c318cc02c3d44e022bee"
+    }
+  },
+  "added": {
+    "src/LibraryPanel.tsx": "1c7680800283258cd62167dfffba51906fd28c3d5e4a86f9f96d172ff6489bbe",
+    "src/DemoApp.tsx": "6ffa1b716667d99652e7a5fb640c6229ee89310525e9c06e39e16195618ad206",
+    "src/demo-main.tsx": "478009a0ee5f11aa7d0f5fea389c718b086aabdf8845dc8d7b9d0ea6ad4ba444"
+  }
+}

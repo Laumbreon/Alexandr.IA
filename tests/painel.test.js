@@ -117,6 +117,11 @@ test('históricos Figma são preservados e mudanças B.1/B.2 permanecem encadead
   assert.equal(b3.previousManifestSha256, createHash('sha256').update(await readFile(path.join(root, 'docs', 'figma-alteracoes-2.0b2.sha256.json'))).digest('hex'));
   assert.deepEqual(Object.keys(b3.changes).sort(), ['.figma/make/site.json', 'src/App.tsx', 'src/components/AuthGate.tsx', 'src/index.css']);
   assert.deepEqual(Object.keys(b3.added), ['src/hooks/useNavigation.ts']);
+  const demo = JSON.parse(await readFile(path.join(root, 'docs', 'figma-alteracoes-demo1.sha256.json'), 'utf8'));
+  assert.equal(demo.phase, 'DEMO.1');
+  assert.equal(demo.previousManifestSha256, createHash('sha256').update(await readFile(path.join(root, 'docs', 'figma-alteracoes-2.0b3.sha256.json'))).digest('hex'));
+  assert.deepEqual(Object.keys(demo.changes).sort(), ['package.json', 'src/App.tsx', 'vite.config.ts']);
+  assert.deepEqual(Object.keys(demo.added).sort(), ['src/DemoApp.tsx', 'src/LibraryPanel.tsx', 'src/demo-main.tsx']);
   assert.equal(original.files.length, 24);
   for (const item of original.files) {
     const change = approved.changes[item.path];
@@ -127,12 +132,17 @@ test('históricos Figma são preservados e mudanças B.1/B.2 permanecem encadead
     if (next) assert.equal(next.before, previous, item.path);
     const latest = b3.changes[item.path];
     if (latest) assert.equal(latest.before, next?.after || previous, item.path);
-    assert.equal(actual, latest?.after || next?.after || previous, item.path);
+    const approvedDemo = demo.changes[item.path];
+    if (approvedDemo) assert.equal(approvedDemo.before, latest?.after || next?.after || previous, item.path);
+    assert.equal(actual, approvedDemo?.after || latest?.after || next?.after || previous, item.path);
   }
   for (const [filename, hash] of Object.entries(current.added)) {
     const latest = b3.changes[filename];
     if (latest) assert.equal(latest.before, hash, filename);
     assert.equal(createHash('sha256').update(await readFile(path.join(root, 'frontend', filename))).digest('hex'), latest?.after || hash, filename);
+  }
+  for (const [filename, hash] of Object.entries(demo.added)) {
+    assert.equal(createHash('sha256').update(await readFile(path.join(root, 'frontend', filename))).digest('hex'), hash, filename);
   }
   for (const [filename, hash] of Object.entries(b3.added)) {
     assert.equal(createHash('sha256').update(await readFile(path.join(root, 'frontend', filename))).digest('hex'), hash, filename);
@@ -149,7 +159,7 @@ test('build usa somente base /painel/ para seus assets e não publica source map
 });
 
 test('fonte e bundle contêm apenas contatos fictícios e não afirmam ações concluídas', async () => {
-  const source = await readFile(path.join(root, 'frontend', 'src', 'App.tsx'), 'utf8');
+  const source = await readFile(path.join(root, 'frontend', 'src', 'LibraryPanel.tsx'), 'utf8');
   let bundle = '';
   for (const name of await readdir(path.join(dist, 'assets'))) {
     if (name.endsWith('.js')) bundle += await readFile(path.join(dist, 'assets', name), 'utf8');

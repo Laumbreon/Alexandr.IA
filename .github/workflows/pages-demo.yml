@@ -1,0 +1,61 @@
+name: Pages — demonstração acadêmica
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: pages-demo
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.3
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.22.3
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - uses: actions/configure-pages@v5
+      - name: Instalar versões do lockfile
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: TypeScript
+        working-directory: frontend
+        run: pnpm exec tsc --noEmit
+      - name: Build exclusivo da demonstração
+        working-directory: frontend
+        run: pnpm run build:demo
+      - name: Conferir somente artefatos estáticos sem autenticação
+        run: node scripts/check-pages-demo.js
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist-demo
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar artefato estático no Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

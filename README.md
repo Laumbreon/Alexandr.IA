@@ -1,5 +1,11 @@
 # Alexandr.IA
 
+## Demonstração estática para GitHub Pages — DEMO.1
+
+Modo independente, com seis seções e aviso "Demonstração acadêmica — dados simulados". Sem senha, autenticação ou chamadas a /api/me. Build específico em frontend/dist-demo, base /Alexandr.IA/; o sistema real continua em /painel/. [Instruções, workflow manual e limitações](docs/pages-demo.md).
+
+Validação DEMO.1: TypeScript, ambos os builds e 160 testes aprovados, zero falhas/ignorados. Publicação não executada. Para npm test, gerar ambos os builds. Os resultados MVP abaixo são o registro da sprint anterior.
+
 MVP acadêmico da Fatec Botucatu para estudar o desenvolvimento de um sistema bibliotecário: interface web, API, banco relacional, autenticação, sessões, testes e acessibilidade.
 
 **Entrega acadêmica de referência: 15/11/2026. Validação executada em 14/11/2026.** Uso local com dados fictícios. Cadastro, login e logout funcionam; operações bibliotecárias ainda são demonstrações. Não há deploy ou publicação remota nesta entrega.

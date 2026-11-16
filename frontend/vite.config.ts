@@ -8,19 +8,33 @@ import siteConfiguration from './.figma/make/site.json'
 
 // Vite config — https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
+  const demo = mode === 'pages-demo'
   // .figma/make/deploy-preview passes `--mode development` for cached-preview builds.
   const emitSourcemaps = mode === 'development'
 
   return {
-    base: process.env.FIGMA_PUBLIC_URL ? `${process.env.FIGMA_PUBLIC_URL}/` : '/painel/',
+    base: demo ? '/Alexandr.IA/' : process.env.FIGMA_PUBLIC_URL ? `${process.env.FIGMA_PUBLIC_URL}/` : '/painel/',
     build: {
+      outDir: demo ? 'dist-demo' : 'dist',
       sourcemap: emitSourcemaps ? 'inline' : false,
       minify: !emitSourcemaps,
     },
     plugins: [
 react(),
       tailwindcss(),
-      figmaSiteConfiguration(siteConfiguration),
+      figmaSiteConfiguration(demo ? {
+        ...siteConfiguration,
+        title: 'Alexandr.IA — Demonstração acadêmica',
+        description: 'Demonstração acadêmica — dados simulados. Sem autenticação ou banco de dados.',
+        icons: { icon: '/Alexandr.IA/favicon.svg' },
+      } : siteConfiguration),
+      ...(demo ? [{
+        name: 'pages-demo-entry',
+        transformIndexHtml: {
+          order: 'pre' as const,
+          handler: (html: string) => html.replace('/src/main.tsx', '/src/demo-main.tsx'),
+        },
+      }] : []),
       figmaErrorOverlayReplay(),
       figmaReactRefreshBoundaryFallback(),
       figmaMakeKitPlugin({ storiesGlob: '/src/**/*.stories.{ts,tsx,js,jsx}' }),

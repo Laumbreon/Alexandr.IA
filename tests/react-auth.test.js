@@ -63,7 +63,7 @@ async function harness(fetcher, realApp = false, strict = false, mobile = false)
   }
   const { AuthGate } = load(path.join(frontend, 'src/components/AuthGate.tsx'));
   const { LogoutButton } = load(path.join(frontend, 'src/components/LogoutButton.tsx'));
-  const App = realApp ? load(path.join(frontend, 'src/App.tsx')).default : null;
+  const App = realApp ? load(path.join(frontend, realApp === 'demo' ? 'src/DemoApp.tsx' : 'src/App.tsx')).default : null;
   const root = createRoot(document.getElementById('root'));
   const navigations = [];
   const children = (identity, invalidate) => React.createElement('section', { 'data-testid': 'admin' },
@@ -388,6 +388,45 @@ test('aluno recebe boas-vindas, perfil e navegação sem controles internos', as
     assert.equal(document.querySelector('.sidebar'), null);
     assert.equal(document.querySelector('[role="switch"]'), null);
     assert.equal(h.text().includes('Leitor fictício'), false);
+  } finally { await h.close(); }
+});
+
+test('Pages: visita livre às seis seções sem autenticação ou chamadas de API', async () => {
+  const requests = [];
+  const h = await harness(async (url) => { requests.push(url); throw new Error('Demo não deve usar rede.'); }, 'demo');
+  try {
+    assert.ok(h.text().includes('Demonstração acadêmica — dados simulados'));
+    assert.ok(h.text().includes('Sem autenticação'));
+    assert.equal(h.button('Sair'), undefined);
+    assert.equal(document.querySelector('input[type="password"]'), null);
+    assert.equal(document.querySelector('.profile-role').textContent, 'Modo demonstração');
+    for (const label of ['Empréstimos', 'Leitores', 'Acervo', 'Relatórios', 'Configurações', 'Visão geral']) {
+      const button = [...document.querySelectorAll('.nav-item')].find((item) => item.querySelector('span')?.textContent === label);
+      await h.flush(() => button.click());
+      assert.equal(button.getAttribute('aria-current'), 'page');
+      assert.equal(document.querySelectorAll('h1').length, 1);
+      assert.ok(h.text().includes('Demonstração acadêmica — dados simulados'));
+    }
+    await h.returnToTab();
+    assert.deepEqual(requests, []);
+  } finally { await h.close(); }
+});
+
+test('Pages: preferências próprias e menu móvel preservam foco e não chamam sessão', async () => {
+  const requests = [];
+  const h = await harness(async (url) => { requests.push(url); throw new Error('Sem API.'); }, 'demo', false, true);
+  try {
+    const opener = document.querySelector('.menu-button');
+    await h.flush(() => opener.click());
+    assert.equal(opener.getAttribute('aria-expanded'), 'true');
+    await h.click('Configurações');
+    assert.equal(document.activeElement, document.querySelector('h1'));
+    assert.ok(document.querySelector('.sidebar').hasAttribute('inert'));
+    const theme = document.querySelector('[role="switch"][aria-label="Modo noturno"]');
+    await h.flush(() => theme.click());
+    assert.equal(localStorage.getItem('alexandria-pages-demo-theme'), 'dark');
+    assert.equal(localStorage.getItem('bibliotech-theme'), null);
+    assert.deepEqual(requests, []);
   } finally { await h.close(); }
 });
 
