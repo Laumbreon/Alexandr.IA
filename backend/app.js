@@ -85,6 +85,7 @@ function createApp(options = {}) {
     sessions.load, loginController(createLoginService(getPool), sessions));
 
   const protectedRoute = [sessions.read, sessions.authenticate];
+  app.use('/api/biblioteca', require('./library/router').libraryRouter(getPool, sessions, authEnv));
   app.get('/api/me', ...protectedRoute, (req, res) => res.json(req.user));
   app.get('/api/csrf', checkOrigin(authEnv), ...protectedRoute, (req, res) => {
     res.json({ csrfToken: req.session.csrfToken });

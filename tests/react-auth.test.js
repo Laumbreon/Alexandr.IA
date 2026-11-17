@@ -118,12 +118,13 @@ test('React aguarda /api/me sem renderizar contatos ou painel', async () => {
 });
 
 for (const perfil of ['bibliotecario', 'administrador']) {
-  test('React usa identidade real e painel demonstrativo para ' + perfil, async () => {
+  test('React usa identidade real e acompanhamento protegido para ' + perfil, async () => {
     const h = await harness(async () => response(200, { ...user, perfil }), true);
     try {
       assert.equal(document.querySelector('.profile-name').textContent, user.nome);
       assert.equal(document.querySelector('.profile-role').textContent, perfil === 'administrador' ? 'Administrador' : 'Bibliotecário');
-      assert.ok(h.text().includes('Painel demonstrativo'));
+      assert.ok(h.text().includes('Biblioteca — dados do servidor'));
+      assert.ok(h.text().includes('Avisos e acompanhamento'));
       assert.ok(h.button('Sair'));
     } finally { await h.close(); }
   });
@@ -352,7 +353,7 @@ test('switches possuem nomes e preferências reais persistem nas chaves existent
 });
 
 test('filtro do acervo preserva lógica e anuncia a categoria selecionada', async () => {
-  const h = await harness(async () => response(200, user), true);
+  const h = await harness(async () => response(200, user), 'demo');
   try {
     await h.click('Acervo');
     const category = [...document.querySelectorAll('.category-card')][0];
@@ -384,7 +385,9 @@ test('aluno recebe boas-vindas, perfil e navegação sem controles internos', as
     assert.ok(h.text().includes('reservas'));
     assert.ok(h.button('Sair'));
     assert.equal(document.querySelectorAll('h1').length, 1);
-    assert.equal(document.querySelectorAll('nav').length, 1);
+    assert.equal(document.querySelectorAll('nav').length, 2);
+    assert.ok(document.querySelector('nav[aria-label="Áreas do aluno"]'));
+    assert.ok(h.button('Meu perfil'));
     assert.equal(document.querySelector('.sidebar'), null);
     assert.equal(document.querySelector('[role="switch"]'), null);
     assert.equal(h.text().includes('Leitor fictício'), false);
@@ -410,6 +413,154 @@ test('Pages: visita livre às seis seções sem autenticação ou chamadas de AP
     await h.returnToTab();
     assert.deepEqual(requests, []);
   } finally { await h.close(); }
+});
+
+test('2.6 demo simula circulação e atualiza avisos sem rede ou persistência', async () => {
+  const requests = [];
+  const h = await harness(async url => { requests.push(url); throw Error('Rede proibida'); }, 'demo');
+  const navigate = async label => {
+    const button = [...document.querySelectorAll('.nav-item')].find(item => item.querySelector('span')?.textContent === label);
+    assert.ok(button); await h.flush(() => button.click());
+  };
+  try {
+    assert.ok(h.text().includes('Atraso simulado'));
+    await navigate('Empréstimos');
+    assert.equal(h.button('Simular renovação 1').disabled, true);
+    await h.click('Simular renovação 2');
+    assert.ok(h.text().includes('2026-11-25'));
+    await h.click('Simular devolução 1');
+    await h.click('Simular cancelamento da reserva');
+    await navigate('Visão geral');
+    assert.ok(h.text().includes('Nenhum aviso neste cenário fictício'));
+    await navigate('Acervo');
+    assert.ok(h.text().includes('Disponível no cenário'));
+    await h.click('Simular reserva');
+    await navigate('Visão geral');
+    assert.ok(h.text().includes('Reserva fictícia aguardando'));
+    await h.click('Reiniciar cenário fictício');
+    assert.ok(h.text().includes('Atraso simulado'));
+    assert.ok(h.text().includes('Prazo próximo simulado'));
+    assert.deepEqual(requests, []);
+    assert.equal(localStorage.getItem('loans'), null);
+    assert.equal(document.cookie, '');
+  } finally { await h.close(); }
+});
+
+test('2.1 React consulta acervo real, informa carregamento e apresenta dados da API', async () => {
+  const pending = deferred(), calls = [];
+  let unavailable = false;
+  const h = await harness(async (url) => {
+    calls.push(url);
+    if (url.includes('/avisos?')) return response(200,{items:[],total:0,pagina:1,limite:10,politica:{antecedencia_configurada:false,antecedencia_dias:null,canais_externos:false}});
+    return url === '/api/me' ? response(200, user) : unavailable ? response(503, { message: 'Biblioteca temporariamente indisponivel.' }) : pending.promise;
+  }, true);
+  try {
+    await h.click('Acervo');
+    assert.ok(h.text().includes('Carregando acervo'));
+    await h.flush(() => pending.resolve(response(200, { items: [{ id:'1',titulo:'Obra fictícia da API',autores:['Autor fictício'],categoria:'Estudo',isbn:null,editora:null,total_exemplares:2,circulaveis:1,versao:1 }], total:1,pagina:1,limite:10 })));
+    assert.ok(h.text().includes('Obra fictícia da API'));
+    assert.ok(h.text().includes('2 exemplares físicos'));
+    assert.ok(h.text().includes('Biblioteca — dados do servidor'));
+    assert.ok(calls.some((url) => url.startsWith('/api/biblioteca/livros')));
+    assert.ok(h.button('Cadastrar livro'));
+    unavailable = true;
+    await h.click('Pesquisar');
+    assert.ok(document.querySelector('[role=alert]').textContent.includes('temporariamente indisponivel'));
+    assert.equal(h.text().includes('Nenhum livro encontrado'), false);
+  } finally { await h.close(); }
+});
+
+test('2.2 React aluno consulta somente meu perfil e não apresenta edição administrativa', async () => {
+  const calls=[];
+  const h=await harness(async(url)=>{
+    calls.push(url);
+    if(url==='/api/me') return response(200,{...user,perfil:'aluno'});
+    if(url.endsWith('/meu-perfil')) return response(200,{id:'1',nome:'Leitor próprio fictício',email:'proprio@example.invalid',ra:'RA-FICTICIO',curso:'Estudo',ativo:true,habilitado:true,versao:1});
+    return response(200,{items:[],total:0,pagina:1,limite:10});
+  },true);
+  try {
+    await h.click('Meu perfil');
+    assert.ok(h.text().includes('RA-FICTICIO'));
+    assert.ok(h.text().includes('Leitor próprio fictício'));
+    assert.equal(h.button('Cadastrar leitor aluno'),undefined);
+    assert.equal(document.querySelector('input[type="password"]'),null);
+    assert.ok(calls.includes('/api/biblioteca/meu-perfil'));
+    assert.equal(calls.some((url)=>url.includes('/leitores/')),false);
+  } finally {await h.close();}
+});
+
+test('2.3 React aluno apresenta empréstimos próprios, prazos e atraso sem devolução administrativa',async()=>{
+  const h=await harness(async(url)=>url==='/api/me'?response(200,{...user,perfil:'aluno'}):response(200,{items:url.includes('/emprestimos?')?[{id:'8',titulo:'Livro próprio fictício',patrimonio:'P-FICTICIO',retirado_em:'2026-10-01T12:00:00Z',previsto_em:'2026-10-08T12:00:00Z',devolvido_em:null,estado:'ativo',atrasado:true,renovacoes:0}]:[],total:url.includes('/emprestimos?')?1:0,pagina:1,limite:10}),true);
+  try{
+    await h.click('Meus empréstimos');
+    assert.ok(h.text().includes('Livro próprio fictício'));
+    assert.ok(h.text().includes('P-FICTICIO'));
+    assert.ok(h.text().includes('Em atraso'));
+    assert.equal(h.button('Novo empréstimo'),undefined);
+    assert.equal([...document.querySelectorAll('button')].some((b)=>b.textContent.startsWith('Registrar devolução')),false);
+  }finally{await h.close();}
+});
+
+test('2.4 React só confirma reserva após a API e apresenta fila própria',async()=>{
+  const pending=deferred(),calls=[];
+  const h=await harness(async(url,options)=>{
+    calls.push({url,options});
+    if(url==='/api/me')return response(200,{...user,perfil:'aluno'});
+    if(url==='/api/csrf')return response(200,{csrfToken:'a'.repeat(64)});
+    if(options?.method==='POST')return pending.promise;
+    if(url.includes('/reservas?'))return response(200,{items:[{id:'9',titulo:'Reserva fictícia própria',leitor:'Pessoa fictícia',estado:'aguardando',solicitado_em:'2026-11-15T12:00:00Z',posicao:3,motivo:null}],total:1,pagina:1,limite:10});
+    return response(200,{items:[{id:'1',titulo:'Obra reservável fictícia',autores:['Autor'],categoria:'Estudo',isbn:null,editora:null,total_exemplares:0,circulaveis:0,disponiveis:0,versao:1}],total:1,pagina:1,limite:10});
+  },true);
+  try{
+    await h.click('Solicitar reserva de Obra reservável fictícia');
+    assert.equal(h.text().includes('Reserva registrada:'),false);
+    await h.flush(()=>pending.resolve(response(201,{id:'9',estado:'aguardando'})));
+    assert.ok(h.text().includes('Reserva registrada: aguarde atendimento'));
+    const post=calls.find((c)=>c.options?.method==='POST');assert.equal(post.options.headers['X-CSRF-Token'],'a'.repeat(64));
+    await h.click('Minhas reservas');assert.ok(h.text().includes('Posição atual: 3'));assert.ok(h.text().includes('Reserva fictícia própria'));
+    assert.equal(h.text().includes('Motivo do cancelamento (sem dados pessoais)'),false);
+  }finally{await h.close();}
+});
+
+test('2.4 React renovação permanece pendente até confirmação e usa CSRF',async()=>{
+  const pending=deferred();let renewed=false;
+  const item={id:'8',titulo:'Livro renovável fictício',patrimonio:'P-RENOVACAO',retirado_em:'2026-11-15T12:00:00Z',previsto_em:'2026-11-22T12:00:00Z',devolvido_em:null,estado:'ativo',atrasado:false,renovacoes:0};
+  const h=await harness(async(url,options)=>{
+    if(url==='/api/me')return response(200,{...user,perfil:'aluno'});
+    if(url==='/api/csrf')return response(200,{csrfToken:'b'.repeat(64)});
+    if(url.endsWith('/politica'))return response(200,{renovacao_configurada:true,limite_renovacoes:1,dias_renovacao:7});
+    if(options?.method==='POST'){renewed=true;return pending.promise;}
+    return response(200,{items:url.includes('/emprestimos?')?[{...item,renovacoes:renewed?1:0}]:[],total:url.includes('/emprestimos?')?1:0,pagina:1,limite:10});
+  },true);
+  try{
+    h.dom.window.confirm=()=>true;await h.click('Meus empréstimos');await h.click('Solicitar renovação de P-RENOVACAO');
+    assert.equal(h.text().includes('Renovação confirmada'),false);
+    assert.equal(h.button('Solicitar renovação de P-RENOVACAO').disabled,true);
+    await h.flush(()=>pending.resolve(response(201,{...item,renovacoes:1})));
+    assert.ok(h.text().includes('Renovação confirmada pela biblioteca.'));
+    assert.equal(h.button('Solicitar renovação de P-RENOVACAO').disabled,true);
+  }finally{await h.close();}
+});
+
+test('2.5 React aluno vê avisos próprios, datas e atualização após devolução',async()=>{
+  let returned=false;const calls=[];
+  const h=await harness(async(url)=>{
+    calls.push(url);if(url==='/api/me')return response(200,{...user,perfil:'aluno'});
+    if(url.includes('/avisos?'))return response(200,{items:returned?[]:[{id:'emprestimo:1',recurso:'emprestimo',tipo:'atrasado',titulo:'Obra fictícia em atraso',patrimonio:'P-AVISO',data_referencia:'2026-11-15T12:00:00Z',posicao:null}],total:returned?0:1,pagina:1,limite:10,politica:{antecedencia_configurada:false,antecedencia_dias:null,canais_externos:false}});
+    return response(200,{items:[],total:0,pagina:1,limite:10});
+  },true);
+  try{
+    await h.click('Avisos');assert.ok(h.text().includes('Devolução em atraso: Obra fictícia em atraso'));assert.ok(h.text().includes('Prazo de devolução'));
+    assert.ok(h.text().includes('antecedência ainda não foi definida'));assert.equal(h.text().includes('Leitor:'),false);
+    returned=true;await h.click('Atualizar avisos');assert.equal(h.text().includes('Obra fictícia em atraso'),false);assert.ok(h.text().includes('Nenhum aviso para este filtro'));
+    assert.ok(calls.some((url)=>url.startsWith('/api/biblioteca/avisos')));
+  }finally{await h.close();}
+});
+
+test('2.5 React erro de avisos não afirma ausência de ocorrências',async()=>{
+  const h=await harness(async(url)=>url==='/api/me'?response(200,user):response(503,{message:'Avisos indisponíveis.'}),true);
+  try{assert.ok(h.text().includes('Avisos indisponíveis.'));assert.equal(h.text().includes('Nenhum aviso para este filtro'),false);assert.ok(document.querySelector('[role=alert]'));}
+  finally{await h.close();}
 });
 
 test('Pages: preferências próprias e menu móvel preservam foco e não chamam sessão', async () => {

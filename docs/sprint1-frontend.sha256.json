@@ -1,0 +1,36 @@
+{
+  "phase": "SPRINT1",
+  "previousManifestSha256": "a4be070f8b948a473da150a61ddf775289518f168beb0ac3369afc4e66fa1693",
+  "changes": {
+    "src/App.tsx": {
+      "before": "bb7080ae1531f4a14638bad59614175392424ca1009b7dc64e1153f2880b24ff",
+      "after": "75b0c330b2de4357b86248afc45a8b95ac07550cc72581d5f23a21b13482919e"
+    },
+    "src/LibraryPanel.tsx": {
+      "before": "1c7680800283258cd62167dfffba51906fd28c3d5e4a86f9f96d172ff6489bbe",
+      "after": "a28ed759efb0dff1353ce89cd28ee81681ab6cd7936d92877566dab0e7855b50"
+    },
+    "src/components/AuthGate.tsx": {
+      "before": "776cebccc3976564b2457e58b8f498ca924d181ca58075343ef0be4e4be4b16b",
+      "after": "32c50a3bf260b4b3541d6aeb4ad7331b760f18e09ff52561c54beb3ecefcac95"
+    },
+    "src/hooks/useNavigation.ts": {
+      "before": "80e570c8915f4abe36b6072a575f768b5b0d171dfba68b66e17b353631cb9422",
+      "after": "498adac450cb968019045d3bdb4226c63977b3a1d4230c481b52b3ef5a7486e5"
+    },
+    "src/main.tsx": {
+      "before": "5f49dce6e6cc4b5d678cf529ef892af0ab7dfa6afb300b11ad559224019b8b05",
+      "after": "f06d3c79a231f4f718c1899bb5351f8cc8bde1a97bf3f80e708a128975fef774"
+    }
+  },
+  "added": {
+    "src/library/api.ts": "cfb5314ba0877215f3269511aa645be48555c9efb1c10d78ebdefb52e8734b5f",
+    "src/library/Catalog.tsx": "0f45189aa538b2920285b1bf171e3075679b3f5d8704faa6ea510192e9b7d3db",
+    "src/library/CirculationArea.tsx": "10e153d8006d2ab08f8f1187085067a2a2743170bdcf859caa2a41edd3790e39",
+    "src/library/library.css": "accf1cf5dd3eaf0d6520b9ae58251952733eb254a99e9d29d28ad90140bcb3b0",
+    "src/library/Loans.tsx": "023a361f4ba7ad0056ef4d63a06359c1807cbfdc5a405550761579ad9731ab47",
+    "src/library/Readers.tsx": "63b110abdd45c0151027533a807275c6ab81c432e31cd68502ea8eba8ac7df0d",
+    "src/library/Reservations.tsx": "4882f36fea1d80f19e3da7c1f4af0b7f5f8123b4797b01f49ea7838646540cfa",
+    "src/library/StudentLibrary.tsx": "a62e022666f5bf9f51024aefcbb708521bc4a632c45a452311528a0ea71814b3"
+  }
+}

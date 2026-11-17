@@ -5,9 +5,10 @@ import { LogoutButton } from "./LogoutButton";
 
 const goToLogin = () => window.location.replace("/login");
 
-export function AuthGate({ children, navigateToLogin = goToLogin }: {
+export function AuthGate({ children, navigateToLogin = goToLogin, studentContent }: {
   children: (user: User, onSessionEnd: () => void) => ReactNode;
   navigateToLogin?: () => void;
+  studentContent?: (user: User) => ReactNode;
 }) {
   const { state, refresh, invalidate } = useAuth();
   useEffect(() => {
@@ -36,8 +37,8 @@ export function AuthGate({ children, navigateToLogin = goToLogin }: {
           <h1 className="page-title">Área do aluno</h1>
           <p>Olá, {state.user.nome}. Boas-vindas à Alexandr.IA!</p>
           <h2 className="section-title">Sua biblioteca</h2>
-          <p>As funções da biblioteca estão em desenvolvimento.</p>
-          <p>Consulta ao acervo, empréstimos e reservas estarão disponíveis em uma próxima etapa.</p>
+          {!studentContent && <><p>As funções da biblioteca estão em desenvolvimento.</p><p>Consulta ao acervo, empréstimos e reservas estarão disponíveis em uma próxima etapa.</p></>}
+          {studentContent?.(state.user)}
         </main>
       </div>;
     }

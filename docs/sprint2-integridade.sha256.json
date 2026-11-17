@@ -1,0 +1,95 @@
+{
+  "scope": "Sprint 2, relativo ao workspace de entrada; manifesto exclui a si mesmo",
+  "baselineFiles": 126,
+  "changed": {
+    ".env.example": {
+      "before": "9c4fa71c26d0e6c56433ad49051174b9c0689252fc6b506282e95dd38a9bda2a",
+      "after": "c3d340c6e384beef4b63c8557e8b6462a4d306ea1bfc3344fc895c21683cdd13"
+    },
+    "README.md": {
+      "before": "3fcf98299dd94c246672b889c3e3f103440919a8207add7b31bf3f2e9f54f697",
+      "after": "e634bbacf5eae568bd253b24d712ee89fd24dea4c35e82961ccbb1fb537e572d"
+    },
+    "backend/library/common.js": {
+      "before": "81866f7b73b41335ff0afc6eb02dd67b95f166d99fd54881a7ccc6fe741ec993",
+      "after": "2967b1785a8ceb5eb6bc00746e914dfdbe8a3739f222754e7c0654a17609a9f0"
+    },
+    "backend/library/router.js": {
+      "before": "f1c0c466f0af9babe95ee745ae663e91538e583d764f6aa46b28fe7aa6385c87",
+      "after": "a4db4115fefa3815b6354f9858f78da4c9a7f4da19b6b1373c3e44768b7ec7a4"
+    },
+    "frontend/src/App.tsx": {
+      "before": "75b0c330b2de4357b86248afc45a8b95ac07550cc72581d5f23a21b13482919e",
+      "after": "ed65a6c0108b3df5ed644178dd75af1c54d0fe338bf8cd7c40cd16004ce1d9ee"
+    },
+    "frontend/src/DemoApp.tsx": {
+      "before": "6ffa1b716667d99652e7a5fb640c6229ee89310525e9c06e39e16195618ad206",
+      "after": "e6e71ec4fb9f452343e6b6d88a4cb1ec42fa3c2305d137ae366d736120998ff1"
+    },
+    "frontend/src/LibraryPanel.tsx": {
+      "before": "a28ed759efb0dff1353ce89cd28ee81681ab6cd7936d92877566dab0e7855b50",
+      "after": "f6d57b714cd3ed32f8fdbff563cf7f2abfdd89471b465bac734d300ca6164e0c"
+    },
+    "frontend/src/demo-main.tsx": {
+      "before": "478009a0ee5f11aa7d0f5fea389c718b086aabdf8845dc8d7b9d0ea6ad4ba444",
+      "after": "f56a0f492cd0ed7c050cbec7bd530fb9e078dd0c41485600fcd89a7be8204b9f"
+    },
+    "frontend/src/library/StudentLibrary.tsx": {
+      "before": "a62e022666f5bf9f51024aefcbb708521bc4a632c45a452311528a0ea71814b3",
+      "after": "47a11b5f7bf100599a25524a99280a590ed16386cc37cfd6dbcc4e9a3a9181ec"
+    },
+    "scripts/check-pages-demo.js": {
+      "before": "d66e3e5868712c4abe7bbb61ccd6608f5d06f619ebc594283873fde234bc8ef4",
+      "after": "be12a04bff33b70733667ebb5273dfa8fc2c8e56107185dd418e7f651056096a"
+    },
+    "tests/library.test.js": {
+      "before": "af486ca39717fe899e836a7589cd74de4a7253ef56e6e20b95c1db244cb5f030",
+      "after": "72e5c82cfbc43a2f4c453046ab164adfbf6272483c7c20e4e75f607a4c117937"
+    },
+    "tests/painel.test.js": {
+      "before": "918c63aef6c55e618b74d3e798e1a524344d2206ffab48546bc3b6fea96f9e0b",
+      "after": "ff40bda96d9905ff71f6f0b6ffe5fe3f32c69aa39703cf64017c77a4f66985d1"
+    },
+    "tests/react-auth.test.js": {
+      "before": "8519324ef9cb3583bc51ac273cbff6d19aa2471607ed7a14eb01cd07ac44bbdc",
+      "after": "897ad3bd4fe9b443cd58a457cab8df42f9d83f12b5564b04ff2d78025dcb077c"
+    }
+  },
+  "added": {
+    "backend/library/notices.js": "53735413a86a151459c04c4794c9429961190746c1eef2070b3541550cb6d684",
+    "docs/sprint2-25.md": "4f262002a79107d05e6dcc42c4c6b3f190e4f319d09fa931969a739d52466a67",
+    "docs/sprint2-frontend.sha256.json": "bce534129492951eb99ba64d31f828c5da239092c5cd32f23897d9d473fb6e31",
+    "docs/sprint2-relatorio.md": "a77bc39b8833c8bb269531b372e6f2cd42cbeb894871b1fecfdcae2be659fb8e",
+    "frontend/src/demo/DemoLibrary.tsx": "dfd5bf36352ba0c2b0ec51e6d66496d5ec269dd90e260d297899a146b4f08914",
+    "frontend/src/library/Notices.tsx": "b16f9d77dbfabb1bde876fa4fe3b4a47d586ef4395517360d9b43d6f8f18a395"
+  },
+  "preserved": {
+    "database/migrations/001_create_usuarios.sql": "d9731c726482e73d9b0cfeebb063f399041a9557ccc00e6f29eef724af807b75",
+    "database/migrations/002_create_alunos.sql": "a23a93fdb3baa501c28f4da2afe0da93a0fe17bb54cd33e35b6f004aabbc798d",
+    "database/migrations/003_create_sessoes.sql": "34c5ad55658bb7f1336d8f3aedceba5a9746d0651c7c5fd579bdbd06b9fa54d7",
+    "database/migrations/004_create_acervo.sql": "34124a45ac7a7abdf2e35f553d594cb049793a99560bef75a205d70c73945109",
+    "database/migrations/005_create_vinculo_leitor.sql": "d69546d05476a80821bcd6e194860582200f608a0b114288035288bb078b2bcf",
+    "database/migrations/006_create_circulacao.sql": "a28e8ad3a11abbcfd954ea5dac097db0c6467b78a8c0bb12749c068be69fa4f1",
+    "database/migrations/007_create_reservas.sql": "3919fde37f3a40158edbd02bf4d944b78c420eacf193d2e70e5b7f28a802404d",
+    "docs/sprint1-21.md": "fcb9b446203d3911bfc9077e4215db9e63080acc31f0336a484164aed21a42ca",
+    "docs/sprint1-22.md": "192d6fa97627a9637ef5d75e49b7d5ceb9dec998fd172a1d23613773d7545fdd",
+    "docs/sprint1-23.md": "f61f116f11bb7a92f5aab772d311374e0216c766f624faf928fe658c9852b2d1",
+    "docs/sprint1-24.md": "df02f0203ecf262970f24b29652dbd538c65848db811971255a52b24ec026910",
+    "docs/sprint1-frontend.sha256.json": "2f8d4002689cffdc096b59333373b05e97291aa5d97adee210b6940240512ced",
+    "docs/sprint1-integridade.sha256.json": "6464f9ec354483a7d8ec00dd8b52616967463d1798a220fd27047715162cd297",
+    "docs/sprint1-relatorio.md": "4e8c52623afb18fefba0c05f941292952624b9a6b97ac7ef4faca6e0c04f94c0",
+    "login/cadastro.css": "6d168b0e98a1a9f02c9fa1e37799e1ba4a8ae0da41336b7311739e1f8f0eb030",
+    "login/cadastro.html": "a8c69641a12ca7a25dd86263280648193724e1f1e560e7e394b5065dffbaeb8f",
+    "login/cadastro.js": "1152ffd6e0bb583ee939442c53149db2c21b6126a7720b0daccafee9dba80ace",
+    "login/esqueci-senha.html": "1f649cf0aec20de54aebb421b8ff24ef56b4349a78f14c291e546dde3057102f",
+    "login/fatec.css": "d98f9a6d698eb6ddad1a258b6fe757d1ec7d0b8c9053b9ee891e1d45402da53e",
+    "login/login.css": "d0591c360762c60d979e816519e0cb08a6a6c5ebeb33103977819303b2d2204b",
+    "login/login.html": "a2e4dfbf3296436c0e61e4da918423360d443dd132611c9ec0b7c228bbbb8015",
+    "login/login.js": "59fc82362cd4379766a59036661d91039ff62478a72d981af4897e57db546cd0",
+    "login/recuperar.css": "d8897d14e7944a7e712d72ac0c4729ab480c98cfc0190079bc375db1a4519ed0",
+    "login/recuperar.js": "912747b07ec8d758c6518eecc76b7e545d9a04552f129f48675e0e73703e9a7a",
+    "login/senha-nova.css": "665d9ad296206538327b48e00144f129be3959c6fac558d683fcaf9bfb0bd220",
+    "login/senha-nova.html": "7f6e4a8da8543184849b645fa175c9afd0f2c29313a210f8d942c0728d906b0f",
+    "login/senha-nova.js": "9ab35492b7d6f3cacc3fe76c5bdb410f27b2be709cf662a15c408ecbca2b7ccd"
+  }
+}

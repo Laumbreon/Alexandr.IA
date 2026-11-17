@@ -122,6 +122,26 @@ test('históricos Figma são preservados e mudanças B.1/B.2 permanecem encadead
   assert.equal(demo.previousManifestSha256, createHash('sha256').update(await readFile(path.join(root, 'docs', 'figma-alteracoes-2.0b3.sha256.json'))).digest('hex'));
   assert.deepEqual(Object.keys(demo.changes).sort(), ['package.json', 'src/App.tsx', 'vite.config.ts']);
   assert.deepEqual(Object.keys(demo.added).sort(), ['src/DemoApp.tsx', 'src/LibraryPanel.tsx', 'src/demo-main.tsx']);
+  const sprint = JSON.parse(await readFile(path.join(root, 'docs', 'sprint1-frontend.sha256.json'), 'utf8'));
+  assert.equal(sprint.previousManifestSha256, createHash('sha256').update(await readFile(path.join(root, 'docs', 'figma-alteracoes-demo1.sha256.json'))).digest('hex'));
+  const sprint2 = JSON.parse(await readFile(path.join(root, 'docs', 'sprint2-frontend.sha256.json'), 'utf8'));
+  assert.equal(sprint2.previousManifestSha256, createHash('sha256').update(await readFile(path.join(root, 'docs', 'sprint1-frontend.sha256.json'))).digest('hex'));
+  const latestHash = (filename, previous) => {
+    const change=sprint2.changes[filename];
+    if(change) assert.equal(change.before,previous,filename);
+    return change?.after||previous;
+  };
+  for(const [filename,hash] of Object.entries(sprint2.added)) {
+    assert.equal(createHash('sha256').update(await readFile(path.join(root,'frontend',filename))).digest('hex'),hash,filename);
+  }
+  const sprintHash = (filename, previous) => {
+    const change = sprint.changes[filename];
+    if (change) assert.equal(change.before, previous, filename);
+    return latestHash(filename, change?.after || previous);
+  };
+  for (const [filename, hash] of Object.entries(sprint.added)) {
+    assert.equal(createHash('sha256').update(await readFile(path.join(root, 'frontend', filename))).digest('hex'), latestHash(filename,hash), filename);
+  }
   assert.equal(original.files.length, 24);
   for (const item of original.files) {
     const change = approved.changes[item.path];
@@ -134,18 +154,18 @@ test('históricos Figma são preservados e mudanças B.1/B.2 permanecem encadead
     if (latest) assert.equal(latest.before, next?.after || previous, item.path);
     const approvedDemo = demo.changes[item.path];
     if (approvedDemo) assert.equal(approvedDemo.before, latest?.after || next?.after || previous, item.path);
-    assert.equal(actual, approvedDemo?.after || latest?.after || next?.after || previous, item.path);
+    assert.equal(actual, sprintHash(item.path, approvedDemo?.after || latest?.after || next?.after || previous), item.path);
   }
   for (const [filename, hash] of Object.entries(current.added)) {
     const latest = b3.changes[filename];
     if (latest) assert.equal(latest.before, hash, filename);
-    assert.equal(createHash('sha256').update(await readFile(path.join(root, 'frontend', filename))).digest('hex'), latest?.after || hash, filename);
+    assert.equal(createHash('sha256').update(await readFile(path.join(root, 'frontend', filename))).digest('hex'), sprintHash(filename, latest?.after || hash), filename);
   }
   for (const [filename, hash] of Object.entries(demo.added)) {
-    assert.equal(createHash('sha256').update(await readFile(path.join(root, 'frontend', filename))).digest('hex'), hash, filename);
+    assert.equal(createHash('sha256').update(await readFile(path.join(root, 'frontend', filename))).digest('hex'), sprintHash(filename, hash), filename);
   }
   for (const [filename, hash] of Object.entries(b3.added)) {
-    assert.equal(createHash('sha256').update(await readFile(path.join(root, 'frontend', filename))).digest('hex'), hash, filename);
+    assert.equal(createHash('sha256').update(await readFile(path.join(root, 'frontend', filename))).digest('hex'), sprintHash(filename, hash), filename);
   }
 });
 

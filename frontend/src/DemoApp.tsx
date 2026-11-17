@@ -1,4 +1,5 @@
 import LibraryPanel from "./LibraryPanel";
+import useDemoLibrary from "./demo/DemoLibrary";
 
 // Identidade editorial fictícia, sem sessão ou privilégio no sistema real.
 const visitor = {
@@ -9,6 +10,7 @@ const visitor = {
 };
 
 export default function DemoApp() {
-  return <LibraryPanel user={visitor} demo
+  const sections = useDemoLibrary();
+  return <LibraryPanel user={visitor} demo sections={sections}
     sessionControls={<span className="profile-role">Sem autenticação</span>} />;
 }

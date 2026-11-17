@@ -1,0 +1,10 @@
+.library-view { color: var(--ink); }
+.library-view p { line-height: 1.6; overflow-wrap: anywhere; }
+.library-fields { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem; margin-block: 1rem; }
+.library-fields label { display: grid; gap: .4rem; flex: 1 1 12rem; }
+.library-fields input, .library-fields select { width: 100%; min-width: 0; padding: .7rem; border: 1px solid var(--muted); border-radius: .5rem; background: var(--surface); color: var(--ink); font: inherit; }
+.library-list { list-style: none; padding: 0; display: grid; gap: 1rem; }
+.library-view .simple-page-card { padding: 1.25rem; margin-block: 1rem; }
+.library-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-block: 1rem; }
+.library-view button { margin: .25rem; }
+.library-fields input[type="checkbox"] { width: auto; justify-self: start; }

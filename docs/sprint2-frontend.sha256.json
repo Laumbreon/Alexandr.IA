@@ -1,0 +1,30 @@
+{
+  "phase": "SPRINT2",
+  "previousManifestSha256": "2f8d4002689cffdc096b59333373b05e97291aa5d97adee210b6940240512ced",
+  "changes": {
+    "src/App.tsx": {
+      "before": "75b0c330b2de4357b86248afc45a8b95ac07550cc72581d5f23a21b13482919e",
+      "after": "ed65a6c0108b3df5ed644178dd75af1c54d0fe338bf8cd7c40cd16004ce1d9ee"
+    },
+    "src/DemoApp.tsx": {
+      "before": "6ffa1b716667d99652e7a5fb640c6229ee89310525e9c06e39e16195618ad206",
+      "after": "e6e71ec4fb9f452343e6b6d88a4cb1ec42fa3c2305d137ae366d736120998ff1"
+    },
+    "src/LibraryPanel.tsx": {
+      "before": "a28ed759efb0dff1353ce89cd28ee81681ab6cd7936d92877566dab0e7855b50",
+      "after": "f6d57b714cd3ed32f8fdbff563cf7f2abfdd89471b465bac734d300ca6164e0c"
+    },
+    "src/demo-main.tsx": {
+      "before": "478009a0ee5f11aa7d0f5fea389c718b086aabdf8845dc8d7b9d0ea6ad4ba444",
+      "after": "f56a0f492cd0ed7c050cbec7bd530fb9e078dd0c41485600fcd89a7be8204b9f"
+    },
+    "src/library/StudentLibrary.tsx": {
+      "before": "a62e022666f5bf9f51024aefcbb708521bc4a632c45a452311528a0ea71814b3",
+      "after": "47a11b5f7bf100599a25524a99280a590ed16386cc37cfd6dbcc4e9a3a9181ec"
+    }
+  },
+  "added": {
+    "src/demo/DemoLibrary.tsx": "dfd5bf36352ba0c2b0ec51e6d66496d5ec269dd90e260d297899a146b4f08914",
+    "src/library/Notices.tsx": "b16f9d77dbfabb1bde876fa4fe3b4a47d586ef4395517360d9b43d6f8f18a395"
+  }
+}

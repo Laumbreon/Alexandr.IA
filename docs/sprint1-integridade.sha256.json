@@ -1,0 +1,202 @@
+{
+  "phase": "SPRINT1",
+  "date": "2026-11-16",
+  "baseCommit": "dfe1aeeec7b6b7c3b2e9615c8f42bb1b4d0a3f38",
+  "checkpoints": {
+    "base": {
+      "tests": 160,
+      "pass": 160,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "2.1": {
+      "tests": 166,
+      "pass": 166,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "2.2": {
+      "tests": 170,
+      "pass": 170,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "2.3": {
+      "tests": 176,
+      "pass": 176,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "2.4": {
+      "tests": 185,
+      "pass": 185,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    }
+  },
+  "validation": {
+    "typescript": "passed",
+    "realBuild": "passed",
+    "demoBuild": "passed",
+    "database": "isolated alexandria_test, PostgreSQL 17.10",
+    "testDataCleaned": true,
+    "temporaryClusterStopped": true,
+    "frontendBuildEnvironment": "production",
+    "testEnvironment": "test"
+  },
+  "files": {
+    ".env.example": {
+      "before": "14f4c306448b7cb9b11e582b01309864a8abcc44c2784c4f4cfb30121539edca",
+      "after": "9c4fa71c26d0e6c56433ad49051174b9c0689252fc6b506282e95dd38a9bda2a"
+    },
+    "README.md": {
+      "before": "289848f933ba28e63759560757a4922e2fab1d0a5e01f5fd9886d6d1c5291362",
+      "after": "3fcf98299dd94c246672b889c3e3f103440919a8207add7b31bf3f2e9f54f697"
+    },
+    "backend/app.js": {
+      "before": "a5c6dcbf88585cd74e7253c2280ca70a6745a321911c4865d42d9978086d6a29",
+      "after": "f0d7bb8725b495d6dfaee57381e424efaf8f7bf5842e08e757c842f0775c9c1b"
+    },
+    "backend/library/catalog.js": {
+      "before": null,
+      "after": "41a02827dae12c3ed14fc856d438362145be5b5f68b3b397deff0abfe1ffe24c"
+    },
+    "backend/library/circulation.js": {
+      "before": null,
+      "after": "698b4d414631facf0dc7c96d0524dcbc3fbac033f69949752e01cc44a6767a25"
+    },
+    "backend/library/common.js": {
+      "before": null,
+      "after": "81866f7b73b41335ff0afc6eb02dd67b95f166d99fd54881a7ccc6fe741ec993"
+    },
+    "backend/library/readers.js": {
+      "before": null,
+      "after": "0ec7871ae1ca60f6a0f95cf1a23652e51eddd10bc50f1dffc1e051b2de76c0d8"
+    },
+    "backend/library/reservations.js": {
+      "before": null,
+      "after": "243f4425f6505fb496a2f954170149751b2bbe249ce99b32402cc03f4b2e11f7"
+    },
+    "backend/library/router.js": {
+      "before": null,
+      "after": "f1c0c466f0af9babe95ee745ae663e91538e583d764f6aa46b28fe7aa6385c87"
+    },
+    "database/migrations/004_create_acervo.sql": {
+      "before": null,
+      "after": "34124a45ac7a7abdf2e35f553d594cb049793a99560bef75a205d70c73945109"
+    },
+    "database/migrations/005_create_vinculo_leitor.sql": {
+      "before": null,
+      "after": "d69546d05476a80821bcd6e194860582200f608a0b114288035288bb078b2bcf"
+    },
+    "database/migrations/006_create_circulacao.sql": {
+      "before": null,
+      "after": "a28e8ad3a11abbcfd954ea5dac097db0c6467b78a8c0bb12749c068be69fa4f1"
+    },
+    "database/migrations/007_create_reservas.sql": {
+      "before": null,
+      "after": "3919fde37f3a40158edbd02bf4d944b78c420eacf193d2e70e5b7f28a802404d"
+    },
+    "docs/sprint1-21.md": {
+      "before": null,
+      "after": "fcb9b446203d3911bfc9077e4215db9e63080acc31f0336a484164aed21a42ca"
+    },
+    "docs/sprint1-22.md": {
+      "before": null,
+      "after": "192d6fa97627a9637ef5d75e49b7d5ceb9dec998fd172a1d23613773d7545fdd"
+    },
+    "docs/sprint1-23.md": {
+      "before": null,
+      "after": "f61f116f11bb7a92f5aab772d311374e0216c766f624faf928fe658c9852b2d1"
+    },
+    "docs/sprint1-24.md": {
+      "before": null,
+      "after": "df02f0203ecf262970f24b29652dbd538c65848db811971255a52b24ec026910"
+    },
+    "docs/sprint1-frontend.sha256.json": {
+      "before": null,
+      "after": "2f8d4002689cffdc096b59333373b05e97291aa5d97adee210b6940240512ced"
+    },
+    "docs/sprint1-relatorio.md": {
+      "before": null,
+      "after": "4e8c52623afb18fefba0c05f941292952624b9a6b97ac7ef4faca6e0c04f94c0"
+    },
+    "frontend/src/App.tsx": {
+      "before": "bb7080ae1531f4a14638bad59614175392424ca1009b7dc64e1153f2880b24ff",
+      "after": "75b0c330b2de4357b86248afc45a8b95ac07550cc72581d5f23a21b13482919e"
+    },
+    "frontend/src/LibraryPanel.tsx": {
+      "before": "1c7680800283258cd62167dfffba51906fd28c3d5e4a86f9f96d172ff6489bbe",
+      "after": "a28ed759efb0dff1353ce89cd28ee81681ab6cd7936d92877566dab0e7855b50"
+    },
+    "frontend/src/components/AuthGate.tsx": {
+      "before": "776cebccc3976564b2457e58b8f498ca924d181ca58075343ef0be4e4be4b16b",
+      "after": "32c50a3bf260b4b3541d6aeb4ad7331b760f18e09ff52561c54beb3ecefcac95"
+    },
+    "frontend/src/hooks/useNavigation.ts": {
+      "before": "80e570c8915f4abe36b6072a575f768b5b0d171dfba68b66e17b353631cb9422",
+      "after": "498adac450cb968019045d3bdb4226c63977b3a1d4230c481b52b3ef5a7486e5"
+    },
+    "frontend/src/library/Catalog.tsx": {
+      "before": null,
+      "after": "0f45189aa538b2920285b1bf171e3075679b3f5d8704faa6ea510192e9b7d3db"
+    },
+    "frontend/src/library/CirculationArea.tsx": {
+      "before": null,
+      "after": "10e153d8006d2ab08f8f1187085067a2a2743170bdcf859caa2a41edd3790e39"
+    },
+    "frontend/src/library/Loans.tsx": {
+      "before": null,
+      "after": "023a361f4ba7ad0056ef4d63a06359c1807cbfdc5a405550761579ad9731ab47"
+    },
+    "frontend/src/library/Readers.tsx": {
+      "before": null,
+      "after": "63b110abdd45c0151027533a807275c6ab81c432e31cd68502ea8eba8ac7df0d"
+    },
+    "frontend/src/library/Reservations.tsx": {
+      "before": null,
+      "after": "4882f36fea1d80f19e3da7c1f4af0b7f5f8123b4797b01f49ea7838646540cfa"
+    },
+    "frontend/src/library/StudentLibrary.tsx": {
+      "before": null,
+      "after": "a62e022666f5bf9f51024aefcbb708521bc4a632c45a452311528a0ea71814b3"
+    },
+    "frontend/src/library/api.ts": {
+      "before": null,
+      "after": "cfb5314ba0877215f3269511aa645be48555c9efb1c10d78ebdefb52e8734b5f"
+    },
+    "frontend/src/library/library.css": {
+      "before": null,
+      "after": "accf1cf5dd3eaf0d6520b9ae58251952733eb254a99e9d29d28ad90140bcb3b0"
+    },
+    "frontend/src/main.tsx": {
+      "before": "5f49dce6e6cc4b5d678cf529ef892af0ab7dfa6afb300b11ad559224019b8b05",
+      "after": "f06d3c79a231f4f718c1899bb5351f8cc8bde1a97bf3f80e708a128975fef774"
+    },
+    "tests/database.test.js": {
+      "before": "7b259a7d9ae2074f948a592c3f80c5f5e2a00a1daa4e4a8d64de02619c5dd332",
+      "after": "26b50d79205230cfd83f85740414c9c4f0959a3560da365a340080fc28b1380e"
+    },
+    "tests/library.test.js": {
+      "before": null,
+      "after": "af486ca39717fe899e836a7589cd74de4a7253ef56e6e20b95c1db244cb5f030"
+    },
+    "tests/painel.test.js": {
+      "before": "92b9c4e2b23a1c09c952306fcc12088b13e9833e334fcf62318d03be3212da6a",
+      "after": "918c63aef6c55e618b74d3e798e1a524344d2206ffab48546bc3b6fea96f9e0b"
+    },
+    "tests/react-auth.test.js": {
+      "before": "cadedca65dd9871bad1d61cb006bdc516a213fbf07247ee062fbb5480942b00e",
+      "after": "8519324ef9cb3583bc51ac273cbff6d19aa2471607ed7a14eb01cd07ac44bbdc"
+    }
+  },
+  "selfExcluded": "docs/sprint1-integridade.sha256.json",
+  "commitPerformed": false,
+  "pushPerformed": false,
+  "deployPerformed": false
+}

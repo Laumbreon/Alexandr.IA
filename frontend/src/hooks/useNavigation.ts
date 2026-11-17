@@ -10,7 +10,7 @@ export default function useNavigation(section: string) {
   const destination = useRef<"opener" | "heading" | null>(null);
   const close = (target: "opener" | "heading" = "opener") => {
     destination.current = target;
-    if (!open && target === "heading") heading.current?.focus();
+    if (!open && target === "heading") (heading.current || document.querySelector<HTMLElement>("#conteudo h1"))?.focus();
     setOpen(false);
   };
   useEffect(() => {
@@ -25,7 +25,7 @@ export default function useNavigation(section: string) {
   }, []);
   useEffect(() => {
     if (!open) {
-      if (destination.current === "heading") heading.current?.focus();
+      if (destination.current === "heading") (heading.current || document.querySelector<HTMLElement>("#conteudo h1"))?.focus();
       if (destination.current === "opener") opener.current?.focus();
       destination.current = null;
       return;

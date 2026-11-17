@@ -228,8 +228,8 @@ const catalogBooks = [
   { title: "Brasil: Uma Biografia", author: "Lilia Schwarcz", category: "História", code: "HIS-2210", availability: "Disponível" },
 ];
 
-export default function LibraryPanel({ user, sessionControls, demo = false }: {
-  user: User; sessionControls: ReactNode; demo?: boolean;
+export default function LibraryPanel({ user, sessionControls, demo = false, sections }: {
+  user: User; sessionControls: ReactNode; demo?: boolean; sections?: Record<string, ReactNode>;
 }) {
   const preferencePrefix = demo ? "alexandria-pages-demo" : "bibliotech";
   const [activeNav, setActiveNav] = useState("Visão geral");
@@ -356,7 +356,7 @@ export default function LibraryPanel({ user, sessionControls, demo = false }: {
           <div className="search-box">
             <Icon name="search" size={19} />
             <input aria-label="Buscar (em desenvolvimento)" placeholder="Busca em desenvolvimento" disabled />
-            
+
           </div>
           <div className="top-actions">
             <button
@@ -387,11 +387,11 @@ export default function LibraryPanel({ user, sessionControls, demo = false }: {
         <div className="content">
           <section className="privacy-notice" aria-label="Limites desta demonstração">
             <div>
-              <strong>{demo ? "Demonstração acadêmica — dados simulados" : "Painel demonstrativo — sem integração de dados"}</strong>
-              <span>{demo ? "Visita livre, sem autenticação, API ou banco de dados. Todos os registros e operações são fictícios. Não informe dados pessoais." : "A identidade do cabeçalho vem da sessão. Os registros de biblioteca são fictícios e as ações bibliotecárias são simuladas. Não informe contatos reais."}</span>
+              <strong>{!demo && sections?.[activeNav] ? "Biblioteca — dados do servidor" : demo ? "Demonstração acadêmica — dados simulados" : "Painel demonstrativo — sem integração de dados"}</strong>
+              <span>{!demo && sections?.[activeNav] ? "Esta seção usa dados reais do banco local. As demais áreas identificadas como demonstrativas continuam fictícias." : demo ? "Visita livre, sem autenticação, API ou banco de dados. Todos os registros e operações são fictícios. Não informe dados pessoais." : "A identidade do cabeçalho vem da sessão. Os registros de biblioteca são fictícios e as ações bibliotecárias são simuladas. Não informe contatos reais."}</span>
             </div>
           </section>
-          {activeNav === "Empréstimos" ? (
+          {sections?.[activeNav] || (activeNav === "Empréstimos" ? (
             <>
               <div className="welcome-row">
                 <div>
@@ -958,7 +958,7 @@ export default function LibraryPanel({ user, sessionControls, demo = false }: {
             </div>
           </section>
             </>
-          )}
+          ))}
         </div>
       </main>
 

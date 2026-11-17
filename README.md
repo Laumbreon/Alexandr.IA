@@ -1,14 +1,28 @@
 # Alexandr.IA
 
+## Sprint 2 — avisos internos e demonstração (2.5–2.6)
+
+Em **16/11/2026**, checkpoint 2.5 com **192 testes** e entrega 2.6 com **193 testes aprovados**, zero falhas e zero ignorados. TypeScript e os dois builds aprovados em Node 24.22.3/PostgreSQL 17.10, usando banco temporário isolado. [Relatório da Sprint 2, inventário e homologação manual](docs/sprint2-relatorio.md).
+
+O sistema autenticado apresenta avisos reais de atraso e reservas; proximidade de vencimento exige `LIBRARY_NOTICE_DAYS` explicitamente definido pelo responsável, sem padrão institucional. Equipe: Visão geral; aluno: Avisos. Atualizar a consulta reflete devoluções, renovações e alterações da fila. Sem envio por e-mail, WhatsApp ou SMS. Nenhuma migration nova nesta sprint; 001–007 preservadas.
+
+A demo independente agora apresenta catálogo, leitores, empréstimos, devolução, reservas, renovação e avisos com um cenário fictício em memória, reiniciável. Não usa API, sessão, senha ou persistência dessas operações. Relatórios e configurações continuam exemplos. Builds mantêm `/painel/` e `/Alexandr.IA/`. Homologação visual em navegador/leitor de tela pendente. Nenhum commit, push ou deploy realizado nesta sprint.
+
+## Sprint 1 — sistema bibliotecário local (2.1–2.4)
+
+Estado atual em **16/11/2026**: acervo, leitores, empréstimos/devoluções e reservas/renovações implementados no sistema autenticado. **185 testes aprovados, zero falhas/ignorados**, com TypeScript e builds real/demo aprovados. [Relatório, endpoints, políticas e roteiro manual](docs/sprint1-relatorio.md).
+
+As migrations 004–007 foram acrescentadas; 001–003 permanecem intactas. Nenhuma migration foi aplicada ao banco de desenvolvimento nesta execução. Retiradas e renovações exigem políticas explícitas do responsável; não há valores institucionais padrão. Sem commit, push ou deploy da Sprint 1.
+
 ## Demonstração estática para GitHub Pages — DEMO.1
 
 Modo independente, com seis seções e aviso "Demonstração acadêmica — dados simulados". Sem senha, autenticação ou chamadas a /api/me. Build específico em frontend/dist-demo, base /Alexandr.IA/; o sistema real continua em /painel/. [Instruções, workflow manual e limitações](docs/pages-demo.md).
 
-Validação DEMO.1: TypeScript, ambos os builds e 160 testes aprovados, zero falhas/ignorados. Publicação não executada. Para npm test, gerar ambos os builds. Os resultados MVP abaixo são o registro da sprint anterior.
+Registro da DEMO.1: 160 testes aprovados naquela etapa. Para npm test, gerar ambos os builds. A fase 2.6 acrescentou representações fictícias das operações; as operações persistentes da Sprint 1 continuam exclusivas do sistema autenticado.
 
 MVP acadêmico da Fatec Botucatu para estudar o desenvolvimento de um sistema bibliotecário: interface web, API, banco relacional, autenticação, sessões, testes e acessibilidade.
 
-**Entrega acadêmica de referência: 15/11/2026. Validação executada em 14/11/2026.** Uso local com dados fictícios. Cadastro, login e logout funcionam; operações bibliotecárias ainda são demonstrações. Não há deploy ou publicação remota nesta entrega.
+**Entrega acadêmica de referência: 15/11/2026; Sprint 1 concluída localmente em 16/11/2026.** Usar dados fictícios na homologação. As operações de biblioteca descritas abaixo usam PostgreSQL real; visão geral/relatórios e a demo Pages continuam identificados como demonstração. Esta sprint não publicou alterações remotas.
 
 ## Equipe e objetivos acadêmicos
 
@@ -21,10 +35,12 @@ Objetivos: compreender separação frontend/backend, modelagem PostgreSQL e migr
 | Situação | Recursos |
 | --- | --- |
 | Implementado | Cadastro real como aluno; senhas de 15–128 pontos de código Unicode, incluindo espaços; login Argon2id; sessões PostgreSQL; identidade por /api/me; logout protegido por CSRF; bloqueio de conta inativa e sessão expirada |
-| Implementado | Entrega React autenticada em /painel/; área simples de aluno; perfil correto de bibliotecário/administrador; navegação por seção; filtros locais; preferências visuais |
-| Demonstrativo | Empréstimos, contatos de leitores fictícios, categorias/acervo, números e relatórios, contador de prazo, avisos e operações de privacidade |
+| Implementado | Painel autenticado em /painel/; catálogo real por obra/exemplar, pesquisa, filtros, patrimônio, cadastro e edição pela equipe |
+| Implementado | Gestão de leitores reutilizando usuarios/alunos; perfil próprio; circulação transacional, devoluções, atrasos/histórico, fila de reservas e renovação por política explícita |
+| Implementado | Avisos internos de atraso, prazo próximo quando configurado e reservas; acompanhamento pela equipe e consulta restrita ao próprio aluno |
+| Demonstrativo | Relatórios ilustrativos, contador do cabeçalho e controles de privacidade identificados como exemplos; todas as seis seções do Pages estático |
 | Local no navegador | Tema, contraste, texto ampliado, redução de movimentos e contato de demonstração; não representam permissões ou alterações no banco |
-| Futuro | Catálogo real, exemplares, empréstimos/reservas, relatórios reais, recuperação de senha e notificações |
+| Futuro | Relatórios agregados reais, leitores externos se aprovados, recuperação de senha e canais externos de notificação após aprovação institucional |
 
 Cadastro público nunca cria bibliotecário ou administrador. Não há tela/API de promoção de perfil nem administrador padrão. Aluno não recebe os controles internos do protótipo. Esconder controles não é autorização: a sessão e o usuário ativo continuam sendo verificados pelo servidor.
 
@@ -56,9 +72,13 @@ backend/
   middleware/sessoes.js     sessão, usuário ativo, CSRF e perfis
   db/pool.js                conexão e proteção de destinos locais
   views/                    /area temporária de compatibilidade
-database/migrations/        001 usuários, 002 alunos, 003 sessões
+  library/                  catálogo, leitores, circulação, reservas e router protegido
+database/migrations/        001–003 históricas; 004 acervo, 005 vínculo, 006 circulação, 007 reservas
 frontend/
-  src/App.tsx               seis vistas demonstrativas
+  src/App.tsx               composição das vistas reais protegidas
+  src/LibraryPanel.tsx       layout compartilhado, mantendo demonstração independente
+  src/library/              telas/API cliente da biblioteca real
+  src/DemoApp.tsx            visita estática sem autenticação
   src/components/           AuthGate e LogoutButton
   src/hooks/                autenticação e navegação acessível
   src/services/auth.ts      identidade, CSRF e logout
@@ -164,6 +184,21 @@ fs.writeFileSync('.env', text);
 
 .env está ignorado pelo Git; .env.example permanece com os segredos vazios. Não imprimir configuração completa para depuração. APP_ORIGIN deve corresponder à origem usada no navegador; para 127.0.0.1 em vez de localhost, ajuste-o também.
 
+## Políticas locais de circulação
+
+Em .env, definir somente valores aprovados pelo responsável, sem copiar senhas ou presumir políticas da Fatec:
+
+```dotenv
+LIBRARY_LOAN_DAYS=
+LIBRARY_MAX_LOANS=
+LIBRARY_RENEWAL_DAYS=
+LIBRARY_MAX_RENEWALS=
+```
+
+Faixas técnicas: retirada 1–365 dias; 1–100 ativos por aluno; renovação 1–365 dias adicionais e 0–20 renovações. Limite zero desabilita renovação. Sem configuração válida, a operação correspondente retorna 503 e a interface informa a pendência. Reinicie o servidor após configurar. Os testes usam valores fictícios próprios, que não são regras institucionais.
+
+Reservas são por obra, em FIFO, sem exemplar alocado até a retirada. Não há multa, expiração automática ou prioridade especial presumida. As decisões conservadoras e suas limitações estão em [sprint1-24.md](docs/sprint1-24.md).
+
 ## 5. Migrations e execução
 
 Com .env preenchido para alexandria_dev:
@@ -174,7 +209,7 @@ npm run db:migrate
 npm start
 ```
 
-As migrations são explícitas, transacionais e registradas por checksum. Não editar migrations aplicadas; novas mudanças futuras exigem novo arquivo numerado. O servidor não aplica migrations automaticamente.
+As migrations são explícitas, transacionais e registradas por checksum. Para atualizar uma instalação anterior, o responsável precisa aplicar 004–007 no banco local autorizado antes de usar as novas telas. Não editar migrations aplicadas; novas mudanças futuras exigem novo arquivo numerado. O servidor não aplica migrations automaticamente.
 
 Abra **http://localhost:3000/cadastro** e crie somente dados fictícios. Depois entre em **http://localhost:3000/login**: o backend responde **{ success: true, redirect: '/painel/' }**. O JavaScript original segue esse destino sem precisar ser alterado.
 
@@ -202,6 +237,7 @@ Essa instância Vite **não fornece a sessão/API Express**. Para demonstrar cad
 | GET /painel/ e assets | Build protegido por sessão/usuário ativo |
 | GET /area e /area.js | Compatibilidade temporária protegida |
 | GET /api/me | Somente id, nome, email e perfil |
+| /api/biblioteca/* | 22 endpoints de catálogo, leitores, circulação e reservas; [contratos e permissões completos](docs/sprint1-relatorio.md) |
 | GET /api/csrf; POST /logout | Token por sessão e invalidação segura |
 | POST /api/forgot-password e /api/senha-nova | 501; funcionalidade pendente |
 
@@ -211,10 +247,10 @@ Essa instância Vite **não fornece a sessão/API Express**. Para demonstrar cad
 
 1. Cadastre “Estudante fictício”, e-mail estudante@example.invalid e uma senha fictícia exclusiva de pelo menos 15 caracteres; não reutilize senha pessoal.
 2. Entre com esses dados e confira a área do aluno em /painel/.
-3. Confira /api/me, sem copiar cookies para o relatório.
+3. Consulte Catálogo e Meu perfil; confira /api/me sem copiar cookies para o relatório. Solicite reservas no catálogo; empréstimos/renovações aparecem na área própria quando houver registros reais e políticas configuradas.
 4. Use Sair; reabrir /painel/ deve bloquear.
-5. Apresente as seis seções internas somente com conta fictícia de perfil previamente preparada por responsável autorizado em banco de demonstração. O cadastro público permanece aluno e não existe atalho de promoção.
-6. Demonstre filtros/preferências e avisos com a ressalva de que não persistem operações de biblioteca.
+5. Com conta fictícia de equipe previamente preparada por responsável autorizado, cadastre uma obra e seus exemplares em Acervo, gerencie Leitores e use Empréstimos → Empréstimos/Reservas. O cadastro público permanece aluno e não existe atalho de promoção.
+6. Demonstre consultas/alterações reais aguardando confirmação da API. Visão geral e relatórios ilustrativos, preferências locais e a demo Pages continuam com os limites identificados. Siga o [roteiro completo](docs/sprint1-relatorio.md) para retirada, devolução, fila e renovação.
 
 ## Testes
 
@@ -235,7 +271,7 @@ npm test
 As variáveis já definidas no processo prevalecem sobre .env. SESSION_SECRET dos testes é gerado aleatoriamente; não é necessário expor o segredo de desenvolvimento. As suites aplicam migrations apenas no banco de teste, usam dados fictícios e limpam suas fixtures. Nunca apontar testes para banco com dados reais.
 
 Sem TEST_DATABASE=alexandria_test, os testes de integração são ignorados; isso não equivale à aprovação completa. Dependências do frontend e build são pré-requisitos.
-Resultado desta sprint: **156 aprovados, zero falhas/ignorados**, incluindo três ciclos cadastro → login → painel → logout por perfil. Base anterior: 153. TypeScript e build passaram. Instalação limpa também passou.
+Resultado atual da Sprint 1: **185 aprovados, zero falhas/ignorados**. Inclui os testes anteriores e a nova biblioteca, autorização horizontal, transações e concorrência. TypeScript e ambos os builds passaram. O registro MVP anterior foi de 156 aprovados e instalação limpa aprovada; DEMO.1 elevou a base a 160.
 
 ## Acessibilidade e limitações
 
@@ -270,5 +306,7 @@ Esses comandos de commit/remoto/push não foram executados nesta sprint. Não in
 
 - [Cadastro](docs/cadastro.md), [autenticação](docs/autenticacao.md) e [banco](docs/banco-de-dados.md).
 - [Integração React](docs/integracao-frontend.md) e [acessibilidade](docs/acessibilidade-2.0b3.md).
-- [Entrega MVP e diff do redirect](docs/entrega-mvp.md).
+- [Sprint 1: relatório, endpoints, configuração e homologação](docs/sprint1-relatorio.md).
+- [2.1 Acervo](docs/sprint1-21.md), [2.2 Leitores](docs/sprint1-22.md), [2.3 Circulação](docs/sprint1-23.md) e [2.4 Reservas/renovações](docs/sprint1-24.md).
+- [Entrega MVP e diff do redirect](docs/entrega-mvp.md) — registro histórico.
 - Auditorias antigas em docs/ são registros históricos: seus estados anteriores (Node 20, login indisponível ou redirect /area) não descrevem a versão atual.

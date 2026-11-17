@@ -31,7 +31,7 @@ async function checkDemo(directory = path.join(__dirname, '..', 'frontend', 'dis
   let javascript = '';
   for (const file of files.filter((name) => name.endsWith('.js'))) javascript += await readFile(path.join(directory, file), 'utf8');
   assert.match(javascript, /Demonstração acadêmica — dados simulados/);
-  assert.doesNotMatch(javascript, /\/api\/me|\/api\/csrf|\/logout|\/login|SESSION_SECRET|PGPASSWORD/);
+  assert.doesNotMatch(javascript, /\/api\/|\/logout|\/login|SESSION_SECRET|PGPASSWORD/);
   return { files, resources };
 }
 
