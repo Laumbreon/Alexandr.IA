@@ -666,6 +666,89 @@ test('resposta antiga de identidade não restaura painel após término de sess�
   } finally { await h.close(); }
 });
 
+test('AUDIT-FIX A03: retry recupera politica sem repetir lista e conserva erro enquanto pendente', async () => {
+  let policies=0, lists=0; const recovered=deferred();
+  const h=await harness(async url=>{
+    if(url==='/api/me')return response(200,user);
+    if(url.includes('/avisos?'))return response(200,{items:[],total:0,pagina:1,limite:10,politica:{antecedencia_configurada:false}});
+    if(url.endsWith('/politica'))return ++policies===1?response(503,{message:'Politica temporariamente indisponivel'}):recovered.promise;
+    if(url.includes('/emprestimos?')){lists++;return response(200,{items:[],total:0,pagina:1,limite:10});}
+    throw Error('Rota inesperada');
+  },true);
+  try {
+    const menu=[...document.querySelectorAll('.nav-item')].find(item=>item.querySelector('span')?.textContent==='Empréstimos');
+    await h.flush(()=>menu.click());
+    assert.equal(h.button('Novo empréstimo').disabled,true);
+    await h.click('Tentar novamente');
+    assert.equal(policies,2);assert.equal(lists,1);
+    assert.ok(h.text().includes('Politica temporariamente indisponivel'));
+    assert.equal(h.button('Tentar novamente').disabled,true);
+    await h.flush(()=>recovered.resolve(response(200,{dias:7,limite:3,circulacao_configurada:true,renovacao_configurada:false})));
+    assert.equal(h.button('Novo empréstimo').disabled,false);
+    assert.equal(h.text().includes('Politica temporariamente indisponivel'),false);
+    await h.flush(()=>{const state=document.querySelector('.library-fields select');state.value='todos';state.dispatchEvent(new window.Event('change',{bubbles:true}));});
+    assert.equal(policies,2);assert.equal(lists,2);
+  } finally {await h.close();}
+});
+
+test('AUDIT-FIX A03: erro da lista tem recuperacao independente da politica', async () => {
+  let policies=0,lists=0;const recovered=deferred();
+  const h=await harness(async url=>{
+    if(url==='/api/me')return response(200,user);
+    if(url.includes('/avisos?'))return response(200,{items:[],total:0,pagina:1,limite:10,politica:{antecedencia_configurada:false}});
+    if(url.endsWith('/politica')){policies++;return response(200,{dias:7,limite:3,circulacao_configurada:true});}
+    if(url.includes('/emprestimos?'))return ++lists===1?response(503,{message:'Lista temporariamente indisponivel'}):recovered.promise;
+    throw Error('Rota inesperada');
+  },true);
+  try {
+    const menu=[...document.querySelectorAll('.nav-item')].find(item=>item.querySelector('span')?.textContent==='Empréstimos');
+    await h.flush(()=>menu.click());await h.click('Tentar novamente');
+    assert.equal(policies,1);assert.equal(lists,2);
+    assert.ok(h.text().includes('Lista temporariamente indisponivel'));
+    await h.flush(()=>recovered.resolve(response(200,{items:[],total:0,pagina:1,limite:10})));
+    assert.equal(h.text().includes('Lista temporariamente indisponivel'),false);
+    assert.equal(h.button('Novo empréstimo').disabled,false);
+  } finally {await h.close();}
+});
+
+for(const status of [401,403,503]) for(const method of ['GET','POST']) {
+  test(`AUDIT-FIX A04: ${method} ${status} invalida somente 401, inclusive CSRF`,async()=>{
+    const calls=[];
+    const h=await harness(async url=>{calls.push(url);return url==='/api/me'?response(200,user):response(status,{message:'Resposta de teste'});},false,true);
+    try {
+      const {libraryRequest}=h.load(path.join(frontend,'src/library/api.ts'));
+      await h.flush(async()=>{await assert.rejects(libraryRequest('/livros',method,{}),e=>e.status===status);});
+      assert.equal(calls.includes('/api/csrf'),method==='POST');
+      if(method==='POST')assert.equal(calls.includes('/api/biblioteca/livros'),false);
+      if(status===401){
+        assert.deepEqual(h.navigations,['/login']);assert.equal(document.querySelector('[data-testid=admin]'),null);
+        await h.returnToTab();assert.equal(calls.filter(url=>url==='/api/me').length,1);
+      }else{
+        assert.deepEqual(h.navigations,[]);assert.ok(document.querySelector('[data-testid=admin]'));assert.ok(h.button('Sair'));
+      }
+    }finally{await h.close();}
+  });
+}
+
+test('AUDIT-FIX A04: 401 concorrente invalida identidade pendente e respostas antigas nao restauram shell',async()=>{
+  const identity=deferred(),unauthorized=deferred(),olderData=deferred();let identities=0;
+  const h=await harness(async url=>{
+    if(url==='/api/me')return ++identities===1?response(200,user):identity.promise;
+    return url.endsWith('/livros')?unauthorized.promise:olderData.promise;
+  });
+  try {
+    const {libraryRequest}=h.load(path.join(frontend,'src/library/api.ts'));
+    const failed=assert.rejects(libraryRequest('/livros'),e=>e.status===401);
+    const older=libraryRequest('/emprestimos');
+    await h.returnToTab();assert.equal(identities,2);
+    await h.flush(async()=>{unauthorized.resolve(response(401));await failed;});
+    assert.deepEqual(h.navigations,['/login']);
+    await h.flush(async()=>{identity.resolve(response(200,user));olderData.resolve(response(200,{items:[{titulo:'Dado antigo'}]}));await older;});
+    assert.equal(document.querySelector('[data-testid=admin]'),null);
+    assert.equal(h.text().includes(user.nome),false);assert.equal(h.text().includes('Dado antigo'),false);
+  }finally{await h.close();}
+});
+
 test('React com HTTP/PostgreSQL reais identifica aluno, usa CSRF e perde acesso após logout', {
   skip: process.env.TEST_DATABASE === 'alexandria_test' ? false : 'Configure banco isolado explicitamente.',
 }, async () => {

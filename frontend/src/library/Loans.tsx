@@ -10,13 +10,20 @@ export default function Loans({own=false}:{own?:boolean}) {
   const [page,setPage]=useState(1),[state,setState]=useState('ativos'),[search,setSearch]=useState(''),[query,setQuery]=useState(''),[revision,setRevision]=useState(0);
   const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
   const [policy,setPolicy]=useState<Policy|null>(null),[open,setOpen]=useState(false);
+  const [policyError,setPolicyError]=useState(''),[policyLoading,setPolicyLoading]=useState(true),[policyRevision,setPolicyRevision]=useState(0);
   const [books,setBooks]=useState<Book[]>([]),[readers,setReaders]=useState<ReaderOption[]>([]),[copies,setCopies]=useState<Copy[]>([]);
   const [pickerReaderSearch,setPickerReaderSearch]=useState(''),[pickerReaderQuery,setPickerReaderQuery]=useState('');
   const [reader,setReader]=useState(''),[book,setBook]=useState(''),[copy,setCopy]=useState(''),[pickerSearch,setPickerSearch]=useState(''),[pickerQuery,setPickerQuery]=useState(''),[copyPage,setCopyPage]=useState(1),[copyTotal,setCopyTotal]=useState(0);
-  useEffect(()=>{let active=true;setLoading(true);setError('');setItems({items:[],total:0,pagina:page,limite:10});
-    libraryRequest<Page<Loan>>(`/emprestimos?estado=${state}&q=${encodeURIComponent(query)}&pagina=${page}`).then(validPage<Loan>).then((data)=>{if(active)setItems(data);}).catch((e:Error)=>{if(active)setError(e.message);}).finally(()=>{if(active)setLoading(false);});
+  useEffect(()=>{let active=true;setLoading(true);setItems({items:[],total:0,pagina:page,limite:10});
+    libraryRequest<Page<Loan>>(`/emprestimos?estado=${state}&q=${encodeURIComponent(query)}&pagina=${page}`).then(validPage<Loan>).then((data)=>{if(active){setItems(data);setError('');}}).catch((e:Error)=>{if(active)setError(e.message);}).finally(()=>{if(active)setLoading(false);});
     return()=>{active=false;};},[page,state,query,revision]);
-  useEffect(()=>{let active=true;libraryRequest<Policy>('/politica').then((p)=>{if(active)setPolicy(p);}).catch((e:Error)=>{if(active)setError(e.message);});return()=>{active=false;};},[own]);
+  // A política tem recuperação própria: filtros/mutações não precisam consultá-la novamente.
+  // Manter o erro durante a tentativa evita anunciar recuperação antes da resposta.
+  useEffect(()=>{let active=true;setPolicyLoading(true);libraryRequest<Policy>('/politica').then((p)=>{if(active){setPolicy(p);setPolicyError('');}}).catch((e:Error)=>{if(active){setPolicy(null);setPolicyError(e.message);}}).finally(()=>{if(active)setPolicyLoading(false);});return()=>{active=false;};},[own,policyRevision]);
+  function retry() {
+    if(error)setRevision((v)=>v+1);
+    if(policyError)setPolicyRevision((v)=>v+1);
+  }
   useEffect(()=>{let active=true;if(!own&&open){setBooks([]);setReaders([]);setReader('');setBook('');
     Promise.all([libraryRequest<Page<Book>>(`/livros?q=${encodeURIComponent(pickerQuery)}&limite=50`).then(validPage<Book>),libraryRequest<Page<ReaderOption>>(`/leitores?q=${encodeURIComponent(pickerReaderQuery)}&limite=50`).then(validPage<ReaderOption>)])
       .then(([b,r])=>{if(active){setBooks(b.items);setReaders(r.items.filter((v)=>v.ativo&&v.habilitado));}}).catch((e:Error)=>{if(active)setError(e.message);});}
@@ -31,7 +38,8 @@ export default function Loans({own=false}:{own?:boolean}) {
   return <section className="library-view" aria-label={own?'Meus empréstimos':'Circulação real'}><Heading className="page-title" tabIndex={-1}>{own?'Meus empréstimos':'Empréstimos e devoluções'}</Heading>
     {!own&&<><p>{policy?.circulacao_configurada?`Configuração local: ${policy.dias} dias; até ${policy.limite} empréstimos ativos por leitor.`:'Circulação aguarda prazo e limite definidos pelo responsável. Nenhuma política oficial é presumida.'}</p><button className="primary-button" disabled={!policy?.circulacao_configurada} onClick={()=>setOpen(!open)}>Novo empréstimo</button></>}
     <form className="library-fields" onSubmit={(e)=>{e.preventDefault();setPage(1);setQuery(search);}}><label>Pesquisar empréstimos<input value={search} onChange={(e)=>setSearch(e.target.value)}/></label><label>Situação<select value={state} onChange={(e)=>{setPage(1);setState(e.target.value);}}><option value="ativos">Ativos</option><option value="historico">Histórico devolvido</option><option value="atrasados">Atrasados</option><option value="todos">Todos</option></select></label><button className="outline-button">Pesquisar</button></form>
-    {loading&&<p role="status">Carregando empréstimos…</p>}{error&&<p role="alert">{error} <button className="outline-button" onClick={()=>setRevision((v)=>v+1)}>Tentar novamente</button></p>}{notice&&<p role="status">{notice}</p>}
+    {loading&&<p role="status">Carregando empréstimos…</p>}{policyLoading&&<p role="status">Consultando política de circulação…</p>}
+    {(error||policyError)&&<div role="alert">{error&&<p>{error}</p>}{policyError&&<p>Política de circulação: {policyError}</p>}<button className="outline-button" disabled={loading||policyLoading} onClick={retry}>Tentar novamente</button></div>}{notice&&<p role="status">{notice}</p>}
     {!loading&&!error&&!items.total&&<p>Nenhum empréstimo encontrado para esta consulta.</p>}
     <ul className="library-list">{items.items.map((item)=><li className="simple-page-card" key={item.id}><ItemHeading>{item.titulo}</ItemHeading><p>Exemplar {item.patrimonio}{!own&&` · Leitor: ${item.leitor}`}</p><p>Retirada: {date(item.retirado_em)} · Prazo: {date(item.previsto_em)} · Devolução: {date(item.devolvido_em)}</p><p>{item.estado}{item.atrasado?' — Em atraso':''}</p>
       {!own&&item.estado==='ativo'&&<button className="outline-button" disabled={busy} onClick={()=>{if(window.confirm(`Confirmar devolução de ${item.titulo}, exemplar ${item.patrimonio}?`))void mutate(`/emprestimos/${item.id}/devolucao`,{},'Devolução registrada pela biblioteca.');}}>Registrar devolução de {item.patrimonio}</button>}

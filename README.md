@@ -1,5 +1,11 @@
 # Alexandr.IA
 
+## Estado atual — AUDIT-FIX.1 (18/11/2026)
+
+Correções locais: recuperação independente da política de circulação após erro e invalidação imediata da identidade quando a API autenticada retorna 401. Respostas 403/503 continuam erros de permissão/indisponibilidade, sem logout. Vite atualizado de 8.0.5 para **8.1.6**, preservando React, Tailwind e TypeScript. **202 testes aprovados, zero falhas/ignorados/cancelados**, TypeScript e ambos os builds aprovados em instalação independente. Consulte os riscos e arquivos candidatos em [audit-fix1-resultado.md](docs/audit-fix1-resultado.md).
+
+O sistema real possui **23 rotas de biblioteca**, incluindo avisos internos. Visão geral da equipe usa avisos reais; relatórios/configurações institucionais continuam ilustrativos. A demo Pages usa somente cenário fictício em memória e continua sem API, senha ou sessão. Esta correção não foi publicada. Homologação desktop/mobile/Narrador, direitos/licença, fontes externas e endurecimento adicional do workflow dependem de decisão humana. Os checkpoints abaixo são registros históricos de cada entrega.
+
 ## Sprint 2 — avisos internos e demonstração (2.5–2.6)
 
 Em **16/11/2026**, checkpoint 2.5 com **192 testes** e entrega 2.6 com **193 testes aprovados**, zero falhas e zero ignorados. TypeScript e os dois builds aprovados em Node 24.22.3/PostgreSQL 17.10, usando banco temporário isolado. [Relatório da Sprint 2, inventário e homologação manual](docs/sprint2-relatorio.md).
@@ -56,7 +62,7 @@ Os botões demonstrativos informam que nada foi enviado/criado, ou ficam desabil
 | Argon2 / express-session / connect-pg-simple | 0.44.0 / 1.19.0 / 10.0.0 |
 | express-rate-limit | 8.7.4 |
 | React / React DOM | 19.2.4 / 19.2.4 |
-| TypeScript / Vite / Tailwind CSS | 5.9.3 / 8.0.5 / 4.2.2 |
+| TypeScript / Vite / Tailwind CSS | 5.9.3 / 8.1.6 / 4.2.2 |
 | pnpm / jsdom de testes | 10.34.3 / 31.0.1 |
 
 Backend usa package-lock.json; frontend usa pnpm-lock.yaml. Não misturar npm install no frontend nem atualizar versões para reproduzir esta entrega. O engines histórico da raiz permite >=20, mas o runtime alvo e validado é Node 24; isso não homologa todas as versões aceitas pela faixa.
@@ -237,7 +243,7 @@ Essa instância Vite **não fornece a sessão/API Express**. Para demonstrar cad
 | GET /painel/ e assets | Build protegido por sessão/usuário ativo |
 | GET /area e /area.js | Compatibilidade temporária protegida |
 | GET /api/me | Somente id, nome, email e perfil |
-| /api/biblioteca/* | 22 endpoints de catálogo, leitores, circulação e reservas; [contratos e permissões completos](docs/sprint1-relatorio.md) |
+| /api/biblioteca/* | 23 rotas de catálogo, leitores, circulação, reservas e avisos; [contratos da Sprint 1](docs/sprint1-relatorio.md) e [avisos da Sprint 2](docs/sprint2-25.md) |
 | GET /api/csrf; POST /logout | Token por sessão e invalidação segura |
 | POST /api/forgot-password e /api/senha-nova | 501; funcionalidade pendente |
 
@@ -250,7 +256,7 @@ Essa instância Vite **não fornece a sessão/API Express**. Para demonstrar cad
 3. Consulte Catálogo e Meu perfil; confira /api/me sem copiar cookies para o relatório. Solicite reservas no catálogo; empréstimos/renovações aparecem na área própria quando houver registros reais e políticas configuradas.
 4. Use Sair; reabrir /painel/ deve bloquear.
 5. Com conta fictícia de equipe previamente preparada por responsável autorizado, cadastre uma obra e seus exemplares em Acervo, gerencie Leitores e use Empréstimos → Empréstimos/Reservas. O cadastro público permanece aluno e não existe atalho de promoção.
-6. Demonstre consultas/alterações reais aguardando confirmação da API. Visão geral e relatórios ilustrativos, preferências locais e a demo Pages continuam com os limites identificados. Siga o [roteiro completo](docs/sprint1-relatorio.md) para retirada, devolução, fila e renovação.
+6. Demonstre consultas/alterações reais aguardando confirmação da API. Visão geral da equipe mostra avisos internos reais; relatórios ilustrativos, preferências locais e a demo Pages mantêm seus limites identificados. Siga o [roteiro completo](docs/sprint1-relatorio.md) para retirada, devolução, fila e renovação.
 
 ## Testes
 
@@ -271,7 +277,7 @@ npm test
 As variáveis já definidas no processo prevalecem sobre .env. SESSION_SECRET dos testes é gerado aleatoriamente; não é necessário expor o segredo de desenvolvimento. As suites aplicam migrations apenas no banco de teste, usam dados fictícios e limpam suas fixtures. Nunca apontar testes para banco com dados reais.
 
 Sem TEST_DATABASE=alexandria_test, os testes de integração são ignorados; isso não equivale à aprovação completa. Dependências do frontend e build são pré-requisitos.
-Resultado atual da Sprint 1: **185 aprovados, zero falhas/ignorados**. Inclui os testes anteriores e a nova biblioteca, autorização horizontal, transações e concorrência. TypeScript e ambos os builds passaram. O registro MVP anterior foi de 156 aprovados e instalação limpa aprovada; DEMO.1 elevou a base a 160.
+Registro histórico da Sprint 1: **185 aprovados, zero falhas/ignorados**; Sprint 2: **193 aprovados**. Incluem autorização horizontal, transações e concorrência. Resultados posteriores da AUDIT-FIX.1 constam no relatório atual. O registro MVP anterior foi de 156 aprovados e instalação limpa aprovada; DEMO.1 elevou a base a 160.
 
 ## Acessibilidade e limitações
 

@@ -1,3 +1,5 @@
+import { signalSessionExpired } from "../services/sessionEvents";
+
 export class LibraryError extends Error {
   constructor(public status: number, message: string) { super(message); }
 }
@@ -6,6 +8,7 @@ export async function libraryRequest<T>(route: string, method = "GET", data?: un
   const headers: Record<string, string> = {};
   if (method !== "GET") {
     const tokenResponse = await fetch("/api/csrf", { credentials: "same-origin", cache: "no-store", redirect: "error" });
+    if (tokenResponse.status === 401) signalSessionExpired();
     if (!tokenResponse.ok) throw new LibraryError(tokenResponse.status, "Não foi possível validar a sessão. Tente novamente.");
     const token = await tokenResponse.json();
     if (!/^[a-f0-9]{64}$/.test(token.csrfToken)) throw new Error("Resposta CSRF inválida.");
@@ -16,6 +19,7 @@ export async function libraryRequest<T>(route: string, method = "GET", data?: un
   let response: Response;
   try { response = await fetch("/api/biblioteca" + route, { ...options, headers }); }
   catch { throw new Error("Não foi possível conectar à biblioteca."); }
+  if (response.status === 401) signalSessionExpired();
   const body = await response.json().catch(() => null);
   if (!response.ok) throw new LibraryError(response.status, body?.message || "Não foi possível concluir a operação.");
   if (!body || typeof body !== "object") throw new Error("Resposta inválida da biblioteca.");

@@ -1,0 +1,29 @@
+{
+  "phase": "AUDIT-FIX.1",
+  "previousManifestSha256": "bce534129492951eb99ba64d31f828c5da239092c5cd32f23897d9d473fb6e31",
+  "changes": {
+    "package.json": {
+      "before": "688239c9be8650cc8e4b03f3d9362dd0d87daf049886c318cc02c3d44e022bee",
+      "after": "e39376c86a267dc1d8acea5882a6c80e39d3ce7524de0fa517ff4c33cf5ee7da"
+    },
+    "pnpm-lock.yaml": {
+      "before": "29bc10aa2c01860993e798d79d25d0ef07e06d5dd6ec7a6468d8e070a34c550b",
+      "after": "3dd4167bd45d71e54dd43d6b5a0e84cf86b8d9e9bac458f7ae922144b48f13b0"
+    },
+    "src/hooks/useAuth.ts": {
+      "before": "37ed66e6ec887c063da8e19bb5cd359abaa553771f54a45810b9dfd533e72cd4",
+      "after": "2d675537faea2038f22014c380516c7479415ba601ef6f79ac99d5fe62611ca0"
+    },
+    "src/library/Loans.tsx": {
+      "before": "023a361f4ba7ad0056ef4d63a06359c1807cbfdc5a405550761579ad9731ab47",
+      "after": "da4b22d3565b07dcc04d152ae723d40fe300e8401f0ff685fd8ba7ada33e5215"
+    },
+    "src/library/api.ts": {
+      "before": "cfb5314ba0877215f3269511aa645be48555c9efb1c10d78ebdefb52e8734b5f",
+      "after": "fe3aaf2542d2793a17f042c77baefc94cd55052a12718e41a1af16df7aa9ee07"
+    }
+  },
+  "added": {
+    "src/services/sessionEvents.ts": "3b8ae7fa73f31c54069042f831e9b43ed4cf4a4d126bc2037002883e3df88526"
+  }
+}

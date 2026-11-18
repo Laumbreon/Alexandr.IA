@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getIdentity, type IdentityResult } from "../services/auth";
+import { onSessionExpired } from "../services/sessionEvents";
 
 export type AuthState = IdentityResult | { status: "loading" };
 
@@ -8,7 +9,9 @@ export function useAuth() {
   const mounted = useRef(false);
   const generation = useRef(0);
   const lastStart = useRef(0);
+  const invalidated = useRef(false);
   const refresh = useCallback(async () => {
+    if (invalidated.current) return;
     const current = ++generation.current;
     lastStart.current = Date.now();
     setState({ status: "loading" });
@@ -17,12 +20,14 @@ export function useAuth() {
     if (mounted.current && current === generation.current) setState(result);
   }, []);
   const invalidate = useCallback(() => {
+    invalidated.current = true;
     generation.current++;
     if (mounted.current) setState({ status: "unauthenticated" });
   }, []);
 
   useEffect(() => {
     mounted.current = true;
+    const unsubscribe = onSessionExpired(invalidate);
     void refresh();
     const onReturn = () => {
       // focus e visibilitychange normalmente chegam juntos: coalescer sem polling.
@@ -32,11 +37,12 @@ export function useAuth() {
     document.addEventListener("visibilitychange", onReturn);
     return () => {
       mounted.current = false;
+      unsubscribe();
       generation.current++;
       window.removeEventListener("focus", onReturn);
       document.removeEventListener("visibilitychange", onReturn);
     };
-  }, [refresh]);
+  }, [refresh, invalidate]);
 
   return { state, refresh, invalidate };
 }

@@ -126,13 +126,26 @@ test('históricos Figma são preservados e mudanças B.1/B.2 permanecem encadead
   assert.equal(sprint.previousManifestSha256, createHash('sha256').update(await readFile(path.join(root, 'docs', 'figma-alteracoes-demo1.sha256.json'))).digest('hex'));
   const sprint2 = JSON.parse(await readFile(path.join(root, 'docs', 'sprint2-frontend.sha256.json'), 'utf8'));
   assert.equal(sprint2.previousManifestSha256, createHash('sha256').update(await readFile(path.join(root, 'docs', 'sprint1-frontend.sha256.json'))).digest('hex'));
+  const fix = JSON.parse(await readFile(path.join(root, 'docs', 'audit-fix1-frontend.sha256.json'), 'utf8'));
+  assert.equal(fix.phase, 'AUDIT-FIX.1');
+  assert.equal(fix.previousManifestSha256, createHash('sha256').update(await readFile(path.join(root, 'docs', 'sprint2-frontend.sha256.json'))).digest('hex'));
+  assert.deepEqual(Object.keys(fix.changes).sort(), ['package.json','pnpm-lock.yaml','src/hooks/useAuth.ts','src/library/Loans.tsx','src/library/api.ts']);
+  assert.deepEqual(Object.keys(fix.added), ['src/services/sessionEvents.ts']);
+  const fixedHash = (filename, previous) => {
+    const change = fix.changes[filename];
+    if (change) assert.equal(change.before, previous, filename);
+    return change?.after || previous;
+  };
+  for (const [filename, hash] of Object.entries(fix.added)) {
+    assert.equal(createHash('sha256').update(await readFile(path.join(root,'frontend',filename))).digest('hex'),hash,filename);
+  }
   const latestHash = (filename, previous) => {
     const change=sprint2.changes[filename];
     if(change) assert.equal(change.before,previous,filename);
-    return change?.after||previous;
+    return fixedHash(filename,change?.after||previous);
   };
   for(const [filename,hash] of Object.entries(sprint2.added)) {
-    assert.equal(createHash('sha256').update(await readFile(path.join(root,'frontend',filename))).digest('hex'),hash,filename);
+    assert.equal(createHash('sha256').update(await readFile(path.join(root,'frontend',filename))).digest('hex'),fixedHash(filename,hash),filename);
   }
   const sprintHash = (filename, previous) => {
     const change = sprint.changes[filename];
