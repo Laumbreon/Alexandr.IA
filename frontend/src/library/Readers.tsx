@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { libraryRequest, validPage, type Page } from "./api";
+import ReaderRecord from './ReaderRecord';
 type Reader = { id:string; nome:string; email?:string; ra:string|null; curso:string|null; ativo:boolean; habilitado:boolean; versao:number };
 const blank = { nome:"",email:"",password:"",ra:"",curso:"" };
 export default function Readers({ own = false }: { own?:boolean }) {
@@ -9,6 +10,7 @@ export default function Readers({ own = false }: { own?:boolean }) {
   const [error,setError] = useState(""),[notice,setNotice] = useState(""),[loading,setLoading] = useState(true),[busy,setBusy] = useState(false),[creating,setCreating] = useState(false);
   const [form,setForm] = useState(blank);
   const pending=useRef(false);
+  const [detailId,setDetailId]=useState('');
   useEffect(() => {
     let active=true;setLoading(true);setError("");setProfile(null);setItems({items:[],total:0,pagina:page,limite:10});
     (own ? libraryRequest<Reader>('/meu-perfil') : libraryRequest<Page<Reader>>(`/leitores?q=${encodeURIComponent(query)}&pagina=${page}`).then(validPage<Reader>))
@@ -38,6 +40,7 @@ export default function Readers({ own = false }: { own?:boolean }) {
     {own&&profile&&<dl><dt>Nome</dt><dd>{profile.nome}</dd><dt>E-mail da conta</dt><dd>{profile.email}</dd><dt>RA</dt><dd>{profile.ra||'Não informado'}</dd><dt>Curso</dt><dd>{profile.curso||'Não informado'}</dd><dt>Vínculo</dt><dd>{profile.ativo&&profile.habilitado?'Habilitado':'Não habilitado'}</dd></dl>}
     {!own&&!loading&&!error&&!items.total&&<p>Nenhum leitor encontrado.</p>}
     {!own&&<><ul className="library-list">{items.items.map((r)=><li className="simple-page-card" key={r.id}><h2>{r.nome}</h2><p>RA: {r.ra||'Não informado'} · Curso: {r.curso||'Não informado'} · {r.ativo&&r.habilitado?'Habilitado':'Não habilitado'}</p><button className="outline-button" onClick={()=>setSelected({...r})}>Editar leitor {r.nome}</button></li>)}</ul><div className="library-actions"><button className="outline-button" disabled={page===1||loading} onClick={()=>setPage(page-1)}>Página anterior de leitores</button><span>{page} · {items.total} leitores</span><button className="outline-button" disabled={page*10>=items.total||loading} onClick={()=>setPage(page+1)}>Próxima página de leitores</button></div></>}
+    {!own&&<><div className="library-actions">{items.items.map(r=><button className="outline-button" key={r.id} onClick={()=>setDetailId(r.id)}>Ficha e histórico de {r.nome}</button>)}</div>{detailId&&<><ReaderRecord id={detailId}/><button className="outline-button" onClick={()=>setDetailId('')}>Fechar ficha detalhada</button></>}</>}
     {!own&&(creating||selected)&&<form className="simple-page-card" onSubmit={save}><h2>{selected?'Atualizar ficha':'Novo leitor aluno'}</h2><div className="library-fields">
       {(['nome',...(selected?[]:['email','password']),'ra','curso'] as (keyof typeof blank)[]).map((key)=><label key={key}>{({nome:'Nome',email:'E-mail',password:'Senha inicial: 15–128 caracteres',ra:'RA opcional',curso:'Curso opcional'})[key]}<input type={key==='password'?'password':key==='email'?'email':'text'} required={['nome','email','password'].includes(key)} autoComplete={key==='password'?'new-password':'off'} value={selected?(selected[key as 'nome'|'ra'|'curso']||''):form[key]} onChange={(e)=>selected?setSelected({...selected,[key]:e.target.value}):setForm({...form,[key]:e.target.value})}/></label>)}
       {selected&&<label><input type="checkbox" checked={selected.habilitado} onChange={(e)=>setSelected({...selected,habilitado:e.target.checked})}/>Habilitado para circulação</label>}</div>

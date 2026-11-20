@@ -51,6 +51,7 @@ after(async () => {
     await pool.query('DELETE FROM biblioteca_reservas WHERE livro_id=ANY($1::bigint[])',[books]);
     await pool.query('DELETE FROM biblioteca_movimentos WHERE emprestimo_id IN (SELECT p.id FROM biblioteca_emprestimos p JOIN biblioteca_exemplares e ON e.id=p.exemplar_id WHERE e.livro_id=ANY($1::bigint[]))',[books]);
     await pool.query('DELETE FROM biblioteca_emprestimos WHERE exemplar_id IN (SELECT id FROM biblioteca_exemplares WHERE livro_id=ANY($1::bigint[]))',[books]);
+    await pool.query('DELETE FROM biblioteca_exemplar_eventos WHERE exemplar_id IN (SELECT id FROM biblioteca_exemplares WHERE livro_id=ANY($1::bigint[]))',[books]);
     await pool.query('DELETE FROM biblioteca_exemplares WHERE livro_id=ANY($1::bigint[])',[books]);
     await pool.query('DELETE FROM biblioteca_livros_autores WHERE livro_id=ANY($1::bigint[])',[books]);
     await pool.query('DELETE FROM biblioteca_livros WHERE id=ANY($1::bigint[])',[books]);
@@ -87,7 +88,7 @@ suite('2.1 patrimônio único, estados validados e obra distinta de exemplar',as
   assert.equal((await staff.request(route,'POST',{patrimonio:prefix+'-P1'})).status,409);
   assert.equal((await student.request(route,'POST',{patrimonio:prefix+'-P2'})).status,403);
   assert.equal((await staff.request('/api/biblioteca/exemplares/'+copy.id,'PUT',{estado:'ilegal',versao:copy.versao})).status,400);
-  assert.equal((await staff.request('/api/biblioteca/exemplares/'+copy.id,'PUT',{estado:'manutencao',conservacao:'regular',versao:copy.versao})).status,200);
+  assert.equal((await staff.request('/api/biblioteca/exemplares/'+copy.id,'PUT',{estado:'manutencao',conservacao:'regular',motivo:'Revisao ficticia QA',versao:copy.versao})).status,200);
   const updated=await (await student.request('/api/biblioteca/livros/'+data.id)).json();assert.equal(updated.total_exemplares,1);assert.equal(updated.circulaveis,0);
   assert.equal((await (await student.request(route)).json()).items.length,1);
 });
@@ -140,7 +141,7 @@ suite('2.3 retirada e devolução reais, CSRF, histórico e proteção horizonta
   assert.equal((await other.request('/api/biblioteca/emprestimos?leitor_id='+student.id)).status,403);
   assert.equal((await (await student.request('/api/biblioteca/emprestimos')).json()).items.some((v)=>v.id===row.id),true);
   assert.equal((await (await student.request('/api/biblioteca/livros/'+work.id)).json()).disponiveis,0);
-  assert.equal((await staff.request('/api/biblioteca/exemplares/'+copy.id,'PUT',{estado:'baixado',conservacao:'bom',versao:copy.versao})).status,409);
+  assert.equal((await staff.request('/api/biblioteca/exemplares/'+copy.id,'PUT',{estado:'baixado',conservacao:'bom',motivo:'Revisao ficticia QA',versao:copy.versao})).status,409);
   assert.equal((await student.request('/api/biblioteca/emprestimos/'+row.id+'/devolucao','POST',{})).status,403);
   assert.equal((await admin.request('/api/biblioteca/emprestimos/'+row.id+'/devolucao','POST',{})).status,201);
   assert.equal((await staff.request('/api/biblioteca/emprestimos/'+row.id+'/devolucao','POST',{})).status,409);
@@ -162,7 +163,7 @@ suite('2.3 impedimentos, configuração ausente e rollback de falha intermediár
   await assert.rejects(()=>createLoan(pool,input,{id:'9223372036854775806',perfil:'bibliotecario'},{LIBRARY_LOAN_DAYS:'7',LIBRARY_MAX_LOANS:'20'}));
   assert.equal(Number((await pool.query('SELECT count(*) FROM biblioteca_emprestimos WHERE exemplar_id=$1',[copy.id])).rows[0].count),0);
   assert.equal((await (await student.request('/api/biblioteca/livros/'+work.id)).json()).disponiveis,1);
-  await staff.request('/api/biblioteca/exemplares/'+copy.id,'PUT',{estado:'manutencao',conservacao:'bom',versao:copy.versao});
+  await staff.request('/api/biblioteca/exemplares/'+copy.id,'PUT',{estado:'manutencao',conservacao:'bom',motivo:'Revisao ficticia QA',versao:copy.versao});
   assert.equal((await staff.request('/api/biblioteca/emprestimos','POST',input)).status,409);
   const fresh=await physical();
   const reader=await (await staff.request('/api/biblioteca/leitores/'+other.id)).json();
@@ -326,4 +327,71 @@ suite('2.5 cancelamento e atendimento removem somente avisos de reservas pendent
   const row=await (await staff.request('/api/biblioteca/emprestimos','POST',{leitor_id:student.id,exemplar_id:copy.id})).json();
   assert.equal(await has(second),false);
   await staff.request('/api/biblioteca/emprestimos/'+row.id+'/devolucao','POST',{});
+});
+
+suite('FINAL.1 resumo exige equipe e retorna particao fisica sem dados pessoais',async()=>{
+ assert.equal((await jar().request('/api/biblioteca/resumo')).status,401);
+ assert.equal((await student.request('/api/biblioteca/resumo')).status,403);
+ assert.equal((await admin.request('/api/biblioteca/resumo?segredo=1')).status,400);
+ const r=await staff.request('/api/biblioteca/resumo');assert.equal(r.status,200);const v=await r.json();
+ assert.equal(v.total_exemplares,v.disponiveis+v.emprestados+v.indisponiveis);
+ for(const [key,value]of Object.entries(v))if(key!=='atualizado_em')assert.ok(Number.isSafeInteger(value)&&value>=0,key);
+ assert.equal(Object.hasOwn(v,'email'),false);assert.equal(Object.hasOwn(v,'senha_hash'),false);
+});
+suite('FINAL.1 ano e sinopse persistem, validam faixas e preservam cliente antigo',async()=>{
+ const input={titulo:prefix+' Metadados',autores:['Autor QA'],categoria:'QA',ano:2001,sinopse:'Sinopse ficticia'};
+ const created=await staff.request('/api/biblioteca/livros','POST',input);assert.equal(created.status,201);const work=await created.json();books.push(work.id);
+ assert.equal(work.ano,2001);assert.equal(work.sinopse,input.sinopse);
+ for(const extra of [{ano:0},{ano:10000},{ano:'x'},{sinopse:'x'.repeat(4001)}])assert.equal((await staff.request('/api/biblioteca/livros','POST',{...input,...extra})).status,400);
+ const old={titulo:input.titulo,autores:input.autores,categoria:input.categoria,versao:work.versao};
+ const edited=await staff.request('/api/biblioteca/livros/'+work.id,'PUT',old);assert.equal(edited.status,200);const next=await edited.json();assert.equal(next.ano,2001);assert.equal(next.sinopse,input.sinopse);
+ assert.equal((await student.request('/api/biblioteca/livros/'+work.id)).status,200);
+});
+suite('FINAL.1 manutencao e baixa exigem motivo, auditam operador e conservam historico',async()=>{
+ const {work,copy}=await physical(),url='/api/biblioteca/exemplares/'+copy.id;
+ assert.equal((await student.request(url+'/historico')).status,403);
+ assert.equal((await staff.request(url,'PUT',{estado:'manutencao',conservacao:'bom',versao:1})).status,400);
+ assert.equal((await staff.request(url,'PUT',{estado:'manutencao',conservacao:'bom',versao:1,motivo:'Revisao QA'})).status,200);
+ assert.equal((await staff.request('/api/biblioteca/emprestimos','POST',{leitor_id:student.id,exemplar_id:copy.id})).status,409);
+ const calls=await Promise.all(['circulavel','baixado'].map(estado=>staff.request(url,'PUT',{estado,conservacao:'bom',versao:2,motivo:'Concorrencia QA'})));
+ assert.deepEqual(calls.map(r=>r.status).sort(),[200,409]);
+ const history=await (await staff.request(url+'/historico')).json();assert.equal(history.total,3);assert.equal(history.items.filter(x=>x.tipo==='entrada').length,1);assert.ok(history.items.every(x=>x.operador&&x.motivo));
+ assert.equal((await (await staff.request('/api/biblioteca/livros/'+work.id)).json()).total_exemplares,1);
+});
+suite('FINAL.1 cinco obras sete exemplares: entrada, retirada, renovacao, fila e devolucao consistentes',async()=>{
+ const a=await actor('aluno'),b=await actor('aluno');const works=[];
+ for(let i=0;i<5;i++)works.push(await book());
+ const copies=[];
+ for(let i=0;i<7;i++){const work=works[i<3?0:i-2];const r=await staff.request('/api/biblioteca/livros/'+work.id+'/exemplares','POST',{patrimonio:prefix+'-FINAL-'+i});assert.equal(r.status,201);copies.push(await r.json());}
+ const summary=async()=>{const r=await staff.request('/api/biblioteca/resumo');assert.equal(r.status,200);return r.json();};
+ const start=await summary();assert.equal(start.total_exemplares,start.disponiveis+start.emprestados+start.indisponiveis);
+ const added=await staff.request('/api/biblioteca/livros/'+works[0].id+'/exemplares','POST',{patrimonio:prefix+'-FINAL-extra'});assert.equal(added.status,201);
+ let current=await summary();assert.equal(current.total_exemplares,start.total_exemplares+1);assert.equal(current.disponiveis,start.disponiveis+1);
+ const create=await staff.request('/api/biblioteca/emprestimos','POST',{leitor_id:a.id,exemplar_id:copies[0].id});assert.equal(create.status,201);const loan=await create.json();
+ current=await summary();assert.equal(current.total_exemplares,start.total_exemplares+1);assert.equal(current.disponiveis,start.disponiveis);assert.equal(current.emprestados,start.emprestados+1);
+ assert.equal((await staff.request('/api/biblioteca/exemplares/'+copies[0].id,'PUT',{estado:'baixado',conservacao:'bom',versao:1,motivo:'Tentativa QA'})).status,409);
+ assert.equal((await staff.request('/api/biblioteca/emprestimos','POST',{leitor_id:b.id,exemplar_id:copies[0].id})).status,409);
+ assert.equal((await a.request('/api/biblioteca/emprestimos/'+loan.id)).status,200);assert.equal((await b.request('/api/biblioteca/emprestimos/'+loan.id)).status,404);
+ assert.equal((await a.request('/api/biblioteca/emprestimos/'+loan.id+'/renovacao','POST',{})).status,201);
+ assert.equal((await b.request('/api/biblioteca/livros/'+works[0].id+'/reservas','POST',{})).status,201);
+ assert.equal((await a.request('/api/biblioteca/emprestimos/'+loan.id+'/renovacao','POST',{})).status,409);
+ assert.equal((await staff.request('/api/biblioteca/emprestimos','POST',{leitor_id:a.id,exemplar_id:copies[1].id})).status,409);
+ assert.equal((await staff.request('/api/biblioteca/emprestimos/'+loan.id+'/devolucao','POST',{})).status,201);
+ assert.equal((await staff.request('/api/biblioteca/emprestimos/'+loan.id+'/devolucao','POST',{})).status,409);
+ current=await summary();assert.equal(current.emprestados,start.emprestados);assert.equal(current.disponiveis,start.disponiveis+1);
+ assert.equal((await staff.request('/api/biblioteca/emprestimos','POST',{leitor_id:b.id,exemplar_id:copies[0].id})).status,201);
+ const queue=await (await b.request('/api/biblioteca/reservas?estado=atendida')).json();assert.ok(queue.items.some(x=>x.livro_id===works[0].id));
+ const own=await (await a.request('/api/biblioteca/emprestimos?estado=historico')).json();assert.ok(own.items.some(x=>x.id===loan.id));
+ const notices=await (await a.request('/api/biblioteca/avisos')).json();assert.ok(!notices.items.some(x=>x.recurso_id===loan.id&&x.recurso==='emprestimo'));
+ assert.equal((await a.request('/logout','POST',{})).status,200);assert.equal((await a.request('/painel/')).status,401);
+});
+suite('FINAL.1 falha ao auditar exemplar desfaz estado e versao na mesma transacao',async()=>{
+ const {copy}=await physical();
+ await pool.query("CREATE FUNCTION final1_reject_event() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.motivo='Rollback QA' THEN RAISE EXCEPTION 'Falha controlada QA'; END IF; RETURN NEW; END; $$");
+ await pool.query('CREATE TRIGGER final1_reject_event BEFORE INSERT ON biblioteca_exemplar_eventos FOR EACH ROW EXECUTE FUNCTION final1_reject_event()');
+ try{
+  assert.equal((await staff.request('/api/biblioteca/exemplares/'+copy.id,'PUT',{estado:'baixado',conservacao:'bom',versao:1,motivo:'Rollback QA'})).status,500);
+  const row=(await pool.query('SELECT estado,versao FROM biblioteca_exemplares WHERE id=$1',[copy.id])).rows[0];assert.equal(row.estado,'circulavel');assert.equal(row.versao,1);
+  assert.equal((await (await staff.request('/api/biblioteca/exemplares/'+copy.id+'/historico')).json()).total,1);
+ }finally{await pool.query('DROP TRIGGER final1_reject_event ON biblioteca_exemplar_eventos');await pool.query('DROP FUNCTION final1_reject_event()');}
 });

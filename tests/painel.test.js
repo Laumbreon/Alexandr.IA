@@ -131,13 +131,20 @@ test('históricos Figma são preservados e mudanças B.1/B.2 permanecem encadead
   assert.equal(fix.previousManifestSha256, createHash('sha256').update(await readFile(path.join(root, 'docs', 'sprint2-frontend.sha256.json'))).digest('hex'));
   assert.deepEqual(Object.keys(fix.changes).sort(), ['package.json','pnpm-lock.yaml','src/hooks/useAuth.ts','src/library/Loans.tsx','src/library/api.ts']);
   assert.deepEqual(Object.keys(fix.added), ['src/services/sessionEvents.ts']);
+  const final = JSON.parse(await readFile(path.join(root,'docs','final1-frontend.sha256.json'),'utf8'));
+  assert.equal(final.phase,'FINAL.1');
+  assert.deepEqual(Object.keys(final.changes).sort(),['src/App.tsx','src/LibraryPanel.tsx','src/library/Catalog.tsx','src/library/Readers.tsx','src/library/StudentLibrary.tsx','src/library/api.ts','src/library/library.css']);
+  assert.deepEqual(Object.keys(final.added).sort(),['src/library/Dashboard.tsx','src/library/ReaderRecord.tsx','src/library/Unavailable.tsx']);
+  assert.equal(final.previousManifestSha256,createHash('sha256').update(await readFile(path.join(root,'docs','audit-fix1-frontend.sha256.json'))).digest('hex'));
+  const finalHash=(filename,previous)=>{const change=final.changes[filename];if(change)assert.equal(change.before,previous,filename);return change?.after||previous;};
+  for(const [filename,hash] of Object.entries(final.added))assert.equal(createHash('sha256').update(await readFile(path.join(root,'frontend',filename))).digest('hex'),hash,filename);
   const fixedHash = (filename, previous) => {
     const change = fix.changes[filename];
     if (change) assert.equal(change.before, previous, filename);
-    return change?.after || previous;
+    return finalHash(filename,change?.after || previous);
   };
   for (const [filename, hash] of Object.entries(fix.added)) {
-    assert.equal(createHash('sha256').update(await readFile(path.join(root,'frontend',filename))).digest('hex'),hash,filename);
+    assert.equal(createHash('sha256').update(await readFile(path.join(root,'frontend',filename))).digest('hex'),finalHash(filename,hash),filename);
   }
   const latestHash = (filename, previous) => {
     const change=sprint2.changes[filename];

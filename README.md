@@ -1,5 +1,17 @@
 # Alexandr.IA
 
+## Estado atual — FINAL.1 (19/11/2026)
+
+**210 testes aprovados, zero falhas/ignorados/cancelados**, TypeScript, instalação por lockfiles, builds real/demo e verificador estático aprovados. npm audit/pnpm audit retornaram zero avisos na consulta desta entrega. [Relatório funcional, matriz de controles e roteiro Edge](docs/final1-homologacao-funcional.md).
+
+O painel da equipe agora consulta estoque agregado real, ficha de leitor com circulação, reservas e avisos separados. Acervo inclui ano/sinopse opcionais; entradas e mudanças de estado/conservação dos exemplares geram histórico com operador. Alterar exemplar exige motivo e é bloqueado durante empréstimo ativo. Os contadores vêm do banco; não há contador fixo no painel real nem controles institucionais falsos de privacidade.
+
+**25 rotas de biblioteca** e migration aditiva **008_complete_catalogo_estoque.sql**; 001–007 preservadas. Não executar a nova migration em banco desconhecido: o servidor novo requer 008. Ela foi homologada apenas em bancos isolados, inclusive cópia populada que preservou obras/exemplares. Nenhuma migration foi aplicada ao VISUAL-QA original ou a banco habitual.
+
+Prévia local nova: **http://127.0.0.1:3018/login**, configuração e credenciais somente em diretório protegido indicado por `tmp/final1-qa-location.txt`. VISUAL-QA anterior em `http://localhost:3017/login` foi preservado, com seu build anterior. Use a origem exata da prévia nova para separar os cookies. Homologação visual/teclado/Narrador continua pendente: o controle gráfico não ficou acessível. Esta etapa não publica Pages nem hospeda backend na Internet.
+
+Os registros abaixo são históricos das etapas anteriores, não substituem o estado FINAL.1.
+
 ## Estado atual — AUDIT-FIX.1 (18/11/2026)
 
 Correções locais: recuperação independente da política de circulação após erro e invalidação imediata da identidade quando a API autenticada retorna 401. Respostas 403/503 continuam erros de permissão/indisponibilidade, sem logout. Vite atualizado de 8.0.5 para **8.1.6**, preservando React, Tailwind e TypeScript. **202 testes aprovados, zero falhas/ignorados/cancelados**, TypeScript e ambos os builds aprovados em instalação independente. Consulte os riscos e arquivos candidatos em [audit-fix1-resultado.md](docs/audit-fix1-resultado.md).
@@ -199,6 +211,7 @@ LIBRARY_LOAN_DAYS=
 LIBRARY_MAX_LOANS=
 LIBRARY_RENEWAL_DAYS=
 LIBRARY_MAX_RENEWALS=
+LIBRARY_NOTICE_DAYS=
 ```
 
 Faixas técnicas: retirada 1–365 dias; 1–100 ativos por aluno; renovação 1–365 dias adicionais e 0–20 renovações. Limite zero desabilita renovação. Sem configuração válida, a operação correspondente retorna 503 e a interface informa a pendência. Reinicie o servidor após configurar. Os testes usam valores fictícios próprios, que não são regras institucionais.

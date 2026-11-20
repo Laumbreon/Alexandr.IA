@@ -26,8 +26,8 @@ export async function libraryRequest<T>(route: string, method = "GET", data?: un
   return body as T;
 }
 export type Page<T> = { items: T[]; total: number; pagina: number; limite: number };
-export type Book = { id: string; titulo: string; isbn: string | null; editora: string | null; categoria: string; autores: string[]; total_exemplares: number; circulaveis: number; disponiveis?:number; versao: number };
-export type Copy = { id: string; livro_id: string; patrimonio: string; estado: string; conservacao: string; disponivel?:boolean; versao: number };
+export type Book = { id: string; titulo: string; isbn: string | null; editora: string | null; ano?:number|null; sinopse?:string|null; categoria: string; autores: string[]; total_exemplares: number; circulaveis: number; disponiveis?:number; versao: number };
+export type Copy = { id: string; livro_id: string; patrimonio: string; estado: string; conservacao: string; disponivel?:boolean; emprestado?:boolean; versao: number };
 export function validPage<T>(page: Page<T>): Page<T> {
   if (!Array.isArray(page.items) || !Number.isFinite(page.total)) throw new Error("Resposta inválida da biblioteca.");
   return page;

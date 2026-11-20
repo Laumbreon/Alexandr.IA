@@ -1,0 +1,39 @@
+{
+  "phase": "FINAL.1",
+  "previousManifestSha256": "406888d16fb242e59e20fda835f5ef9a8b51f9f6639543174d37516e4723c454",
+  "changes": {
+    "src/App.tsx": {
+      "before": "ed65a6c0108b3df5ed644178dd75af1c54d0fe338bf8cd7c40cd16004ce1d9ee",
+      "after": "3d9a6dde08d7f1de2099f5eec762f7fa5160319253f51966e604aa8689473f00"
+    },
+    "src/LibraryPanel.tsx": {
+      "before": "f6d57b714cd3ed32f8fdbff563cf7f2abfdd89471b465bac734d300ca6164e0c",
+      "after": "28c99ac85d0d7b3041089cbca37c44880cd6d02a4d14ae4258e298bb51690662"
+    },
+    "src/library/Catalog.tsx": {
+      "before": "0f45189aa538b2920285b1bf171e3075679b3f5d8704faa6ea510192e9b7d3db",
+      "after": "3a010a57223e2ac45ff7eb487377caa7a93ad378ab41c554cf8dec673734640a"
+    },
+    "src/library/Readers.tsx": {
+      "before": "63b110abdd45c0151027533a807275c6ab81c432e31cd68502ea8eba8ac7df0d",
+      "after": "8e2637e4545c64abf9e2252a85c5a15c3306417dff0c203976bce5a328056765"
+    },
+    "src/library/StudentLibrary.tsx": {
+      "before": "47a11b5f7bf100599a25524a99280a590ed16386cc37cfd6dbcc4e9a3a9181ec",
+      "after": "0f5718da89ed6c286c6f8c14c97e200c11ef3e7537eeb1e166470953c45334d6"
+    },
+    "src/library/api.ts": {
+      "before": "fe3aaf2542d2793a17f042c77baefc94cd55052a12718e41a1af16df7aa9ee07",
+      "after": "d3c77c0f20965f540ab10963a3cf3e5f2a0619505a0ad894f0388421ada64e83"
+    },
+    "src/library/library.css": {
+      "before": "accf1cf5dd3eaf0d6520b9ae58251952733eb254a99e9d29d28ad90140bcb3b0",
+      "after": "4c1b99d677480a256daeaf5f8c59a3e8ab18da9ca1c4303403ead063fc24a4a1"
+    }
+  },
+  "added": {
+    "src/library/Dashboard.tsx": "838be759fb750ade5ae2ed34593fbdfde026f0f2ff74f3d4fa8b7a4fcaa029ae",
+    "src/library/ReaderRecord.tsx": "2ad2783d370af3e692d730fe6e8e0fffa23e7070754ac398f3207476bba92633",
+    "src/library/Unavailable.tsx": "be9e79e2aef46ce7d01576efc9b01d69334879a6af0c592462abe266da5a9439"
+  }
+}

@@ -1,18 +1,19 @@
 const { fail, fields, text, integer, id, page, pattern, transaction } = require('./common');
-const selectBook = `SELECT l.id,l.titulo,l.isbn,l.editora,l.versao,c.nome AS categoria,
+const selectBook = `SELECT l.id,l.titulo,l.isbn,l.editora,l.ano,l.sinopse,l.versao,c.nome AS categoria,
   ARRAY(SELECT a.nome FROM biblioteca_autores a JOIN biblioteca_livros_autores la ON la.autor_id=a.id WHERE la.livro_id=l.id ORDER BY a.nome) AS autores,
   (SELECT count(*)::int FROM biblioteca_exemplares e WHERE e.livro_id=l.id) AS total_exemplares,
   (SELECT count(*)::int FROM biblioteca_exemplares e WHERE e.livro_id=l.id AND e.estado='circulavel') AS circulaveis
   ,(SELECT count(*)::int FROM biblioteca_exemplares e WHERE e.livro_id=l.id AND e.estado='circulavel' AND e.conservacao<>'danificado' AND NOT EXISTS(SELECT 1 FROM biblioteca_emprestimos p WHERE p.exemplar_id=e.id AND p.estado='ativo')) AS disponiveis
   FROM biblioteca_livros l JOIN biblioteca_categorias c ON c.id=l.categoria_id`;
 function bookData(body, edit = false) {
-  fields(body, ['titulo','isbn','editora','categoria','autores', ...(edit ? ['versao'] : [])]);
+  fields(body, ['titulo','isbn','editora','ano','sinopse','categoria','autores', ...(edit ? ['versao'] : [])]);
   if (!Array.isArray(body.autores) || body.autores.length < 1 || body.autores.length > 10) fail(400, 'Informe de um a dez autores.');
   const autores = body.autores.map((v) => text(v, 200));
   if (new Set(autores.map((v) => v.toLowerCase())).size !== autores.length) fail(400, 'Autor repetido.');
   const isbn = text(body.isbn, 20, true)?.replace(/[- ]/g, '').toUpperCase() || null;
   if (isbn && !/^([0-9]{13}|[0-9]{9}[0-9X])$/.test(isbn)) fail(400, 'Formato do ISBN inválido.');
-  return { titulo: text(body.titulo, 300), isbn, editora: text(body.editora, 200, true), categoria: text(body.categoria, 100), autores, ...(edit ? { versao: integer(body.versao, 1, 2147483646) } : {}) };
+  const ano=body.ano===undefined||body.ano===null||body.ano===''?null:integer(body.ano,1,9999);
+  return { titulo: text(body.titulo, 300), isbn, editora: text(body.editora, 200, true), ano, sinopse:text(body.sinopse,4000,true), categoria: text(body.categoria, 100), autores, ...(edit ? { versao: integer(body.versao, 1, 2147483646) } : {}) };
 }
 async function getBook(pool, bookId) {
   const row = (await pool.query(selectBook + ' WHERE l.id=$1', [id(bookId)])).rows[0];
@@ -34,10 +35,10 @@ async function saveBook(pool, body, bookId) {
     let key;
     if (bookId) {
       key = id(bookId);
-      const result = await c.query('UPDATE biblioteca_livros SET titulo=$1,isbn=$2,editora=$3,categoria_id=$4,versao=versao+1 WHERE id=$5 AND versao=$6 RETURNING id', [data.titulo,data.isbn,data.editora,category,key,data.versao]);
+      const result = await c.query('UPDATE biblioteca_livros SET titulo=$1,isbn=$2,editora=$3,categoria_id=$4,ano=CASE WHEN $9 THEN $7 ELSE ano END,sinopse=CASE WHEN $10 THEN $8 ELSE sinopse END,versao=versao+1 WHERE id=$5 AND versao=$6 RETURNING id', [data.titulo,data.isbn,data.editora,category,key,data.versao,data.ano,data.sinopse,Object.hasOwn(body,'ano'),Object.hasOwn(body,'sinopse')]);
       if (!result.rowCount) { await getBook(c, key); fail(409, 'Livro alterado por outra operação. Atualize a página.'); }
       await c.query('DELETE FROM biblioteca_livros_autores WHERE livro_id=$1', [key]);
-    } else key = (await c.query('INSERT INTO biblioteca_livros(titulo,isbn,editora,categoria_id) VALUES($1,$2,$3,$4) RETURNING id', [data.titulo,data.isbn,data.editora,category])).rows[0].id;
+    } else key = (await c.query('INSERT INTO biblioteca_livros(titulo,isbn,editora,categoria_id,ano,sinopse) VALUES($1,$2,$3,$4,$5,$6) RETURNING id', [data.titulo,data.isbn,data.editora,category,data.ano,data.sinopse])).rows[0].id;
     for (const author of data.autores) {
       const aid = (await c.query('INSERT INTO biblioteca_autores(nome) VALUES($1) ON CONFLICT(lower(nome)) DO UPDATE SET nome=biblioteca_autores.nome RETURNING id', [author])).rows[0].id;
       await c.query('INSERT INTO biblioteca_livros_autores(livro_id,autor_id) VALUES($1,$2)', [key,aid]);
@@ -46,35 +47,40 @@ async function saveBook(pool, body, bookId) {
   });
 }
 function copyData(body, edit) {
-  fields(body, edit ? ['estado','conservacao','versao'] : ['patrimonio','estado','conservacao']);
+  fields(body, edit ? ['estado','conservacao','versao','motivo'] : ['patrimonio','estado','conservacao']);
   if (edit && (typeof body.estado !== 'string' || typeof body.conservacao !== 'string')) fail(400,'Informe estado e conservação ao atualizar.');
   const estado = body.estado ?? 'circulavel', conservacao = body.conservacao ?? 'bom';
   if (!['circulavel','manutencao','baixado'].includes(estado) || !['bom','regular','danificado'].includes(conservacao)) fail(400, 'Estado de exemplar inválido.');
-  return { estado, conservacao, ...(edit ? { versao: integer(body.versao, 1, 2147483646) } : { patrimonio: text(body.patrimonio, 80) }) };
+  return { estado, conservacao, ...(edit ? { versao: integer(body.versao, 1, 2147483646),motivo:text(body.motivo,300) } : { patrimonio: text(body.patrimonio, 80) }) };
 }
 async function copies(pool, bookId, query) {
   await getBook(pool, bookId);
   const { pagina, limite } = page(query);
-  const items = (await pool.query("SELECT e.id,e.livro_id,e.patrimonio,e.estado,e.conservacao,e.versao,(e.estado='circulavel' AND e.conservacao<>'danificado' AND NOT EXISTS(SELECT 1 FROM biblioteca_emprestimos p WHERE p.exemplar_id=e.id AND p.estado='ativo')) AS disponivel FROM biblioteca_exemplares e WHERE e.livro_id=$1 ORDER BY e.id LIMIT $2 OFFSET $3", [id(bookId),limite,(pagina-1)*limite])).rows;
+  const items = (await pool.query("SELECT e.id,e.livro_id,e.patrimonio,e.estado,e.conservacao,e.versao,EXISTS(SELECT 1 FROM biblioteca_emprestimos p WHERE p.exemplar_id=e.id AND p.estado='ativo') AS emprestado,(e.estado='circulavel' AND e.conservacao<>'danificado' AND NOT EXISTS(SELECT 1 FROM biblioteca_emprestimos p WHERE p.exemplar_id=e.id AND p.estado='ativo')) AS disponivel FROM biblioteca_exemplares e WHERE e.livro_id=$1 ORDER BY e.id LIMIT $2 OFFSET $3", [id(bookId),limite,(pagina-1)*limite])).rows;
   const total = Number((await pool.query('SELECT count(*) FROM biblioteca_exemplares WHERE livro_id=$1', [id(bookId)])).rows[0].count);
   return { items, total, pagina, limite };
 }
-async function addCopy(pool, bookId, body) {
+async function addCopy(pool, bookId, body,user) {
   const data = copyData(body, false);
   return transaction(pool, async (c) => {
     await getBook(c, bookId);
-    return (await c.query('INSERT INTO biblioteca_exemplares(livro_id,patrimonio,estado,conservacao) VALUES($1,$2,$3,$4) RETURNING id,livro_id,patrimonio,estado,conservacao,versao', [id(bookId),data.patrimonio,data.estado,data.conservacao])).rows[0];
+    const row=(await c.query('INSERT INTO biblioteca_exemplares(livro_id,patrimonio,estado,conservacao) VALUES($1,$2,$3,$4) RETURNING id,livro_id,patrimonio,estado,conservacao,versao', [id(bookId),data.patrimonio,data.estado,data.conservacao])).rows[0];
+    await c.query("INSERT INTO biblioteca_exemplar_eventos(exemplar_id,operador_id,tipo,estado_novo,conservacao_nova,motivo) VALUES($1,$2,'entrada',$3,$4,'Cadastro de exemplar')",[row.id,user.id,data.estado,data.conservacao]);
+    return row;
   });
 }
-async function updateCopy(pool, copyId, body) {
+async function updateCopy(pool, copyId, body,user) {
   const data = copyData(body, true);
   return transaction(pool,async(c)=>{
     const initial=(await c.query('SELECT livro_id FROM biblioteca_exemplares WHERE id=$1',[id(copyId)])).rows[0];
     if(!initial)fail(404,'Exemplar não encontrado.');
     await c.query('SELECT id FROM biblioteca_livros WHERE id=$1 FOR UPDATE',[initial.livro_id]);
+    const previous=(await c.query('SELECT estado,conservacao FROM biblioteca_exemplares WHERE id=$1 FOR UPDATE',[id(copyId)])).rows[0];
     if((await c.query("SELECT id FROM biblioteca_emprestimos WHERE exemplar_id=$1 AND estado='ativo'",[id(copyId)])).rowCount)fail(409,'Registre a devolução antes de alterar o exemplar.');
     const row=(await c.query('UPDATE biblioteca_exemplares SET estado=$1,conservacao=$2,versao=versao+1 WHERE id=$3 AND versao=$4 RETURNING id,livro_id,patrimonio,estado,conservacao,versao',[data.estado,data.conservacao,id(copyId),data.versao])).rows[0];
-    if(!row)fail(409,'Exemplar alterado por outra operação. Atualize a consulta.');return row;
+    if(!row)fail(409,'Exemplar alterado por outra operação. Atualize a consulta.');
+    await c.query("INSERT INTO biblioteca_exemplar_eventos(exemplar_id,operador_id,tipo,estado_anterior,conservacao_anterior,estado_novo,conservacao_nova,motivo) VALUES($1,$2,'alteracao',$3,$4,$5,$6,$7)",[row.id,user.id,previous.estado,previous.conservacao,data.estado,data.conservacao,data.motivo]);
+    return row;
   });
 }
 module.exports = { listBooks, getBook, saveBook, copies, addCopy, updateCopy };

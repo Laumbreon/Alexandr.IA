@@ -5,7 +5,7 @@
   "description": "Servidor local do módulo de acesso",
   "scripts": {
     "start": "node backend/server.js",
-    "test": "node --test",
+    "test": "node --test tests/*.test.js",
     "db:check": "node scripts/db-check.js",
     "db:migrate": "node scripts/migrate.js"
   },

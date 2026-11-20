@@ -36,9 +36,9 @@ async function harness(fetcher, realApp = false, strict = false, mobile = false)
     return queries.get(query);
   };
   const previous = {};
-  for (const key of ['window', 'document', 'localStorage', 'IS_REACT_ACT_ENVIRONMENT', 'fetch']) previous[key] = Object.getOwnPropertyDescriptor(global, key);
+  for (const key of ['window', 'document', 'localStorage', 'FormData', 'IS_REACT_ACT_ENVIRONMENT', 'fetch']) previous[key] = Object.getOwnPropertyDescriptor(global, key);
   Object.assign(global, { window: dom.window, document: dom.window.document,
-    localStorage: dom.window.localStorage, IS_REACT_ACT_ENVIRONMENT: true, fetch: fetcher });
+    localStorage: dom.window.localStorage, FormData:dom.window.FormData,IS_REACT_ACT_ENVIRONMENT: true, fetch: fetcher });
   const React = requireFrontend('react');
   const { createRoot } = requireFrontend('react-dom/client');
   const cache = new Map();
@@ -124,7 +124,7 @@ for (const perfil of ['bibliotecario', 'administrador']) {
       assert.equal(document.querySelector('.profile-name').textContent, user.nome);
       assert.equal(document.querySelector('.profile-role').textContent, perfil === 'administrador' ? 'Administrador' : 'Bibliotecário');
       assert.ok(h.text().includes('Biblioteca — dados do servidor'));
-      assert.ok(h.text().includes('Avisos e acompanhamento'));
+      assert.ok(h.text().includes('Estoque e circulação'));
       assert.ok(h.button('Sair'));
     } finally { await h.close(); }
   });
@@ -333,7 +333,7 @@ test('switches possuem nomes e preferências reais persistem nas chaves existent
   try {
     await h.click('Configurações');
     const switches = [...document.querySelectorAll('[role="switch"]')];
-    assert.equal(switches.length, 7);
+    assert.equal(switches.length, 4);
     assert.ok(switches.every((control) => control.getAttribute('aria-label')));
     for (const [name, key, dataset, value] of [
       ['Texto ampliado', 'large-text', 'fontSize', 'large'],
@@ -370,9 +370,11 @@ test('controles sem implementação identificam indisponibilidade e ficam desabi
   try {
     assert.ok(document.querySelector('.support-link').disabled);
     assert.ok(document.querySelector('.search-box input').disabled);
-    assert.ok(document.querySelector('[aria-label^="Notificações"]').disabled);
+    const notices=document.querySelector('[aria-label="Abrir avisos internos"]');
+    assert.equal(notices.disabled,false);
     assert.ok([...document.querySelectorAll('.more-button')].every((button) => button.disabled));
     assert.equal(document.querySelector('.brand-name').textContent, 'Alexandr.IA');
+    await h.flush(()=>notices.click());assert.ok(h.text().includes('Avisos e acompanhamento'));
   } finally { await h.close(); }
 });
 
@@ -451,6 +453,7 @@ test('2.1 React consulta acervo real, informa carregamento e apresenta dados da 
   let unavailable = false;
   const h = await harness(async (url) => {
     calls.push(url);
+    if (url.endsWith('/resumo'))return response(503,{message:'Resumo separado neste teste'});
     if (url.includes('/avisos?')) return response(200,{items:[],total:0,pagina:1,limite:10,politica:{antecedencia_configurada:false,antecedencia_dias:null,canais_externos:false}});
     return url === '/api/me' ? response(200, user) : unavailable ? response(503, { message: 'Biblioteca temporariamente indisponivel.' }) : pending.promise;
   }, true);
@@ -512,6 +515,7 @@ test('2.4 React só confirma reserva após a API e apresenta fila própria',asyn
     return response(200,{items:[{id:'1',titulo:'Obra reservável fictícia',autores:['Autor'],categoria:'Estudo',isbn:null,editora:null,total_exemplares:0,circulaveis:0,disponiveis:0,versao:1}],total:1,pagina:1,limite:10});
   },true);
   try{
+    await h.click('Catálogo');
     await h.click('Solicitar reserva de Obra reservável fictícia');
     assert.equal(h.text().includes('Reserva registrada:'),false);
     await h.flush(()=>pending.resolve(response(201,{id:'9',estado:'aguardando'})));
@@ -559,7 +563,7 @@ test('2.5 React aluno vê avisos próprios, datas e atualização após devoluç
 
 test('2.5 React erro de avisos não afirma ausência de ocorrências',async()=>{
   const h=await harness(async(url)=>url==='/api/me'?response(200,user):response(503,{message:'Avisos indisponíveis.'}),true);
-  try{assert.ok(h.text().includes('Avisos indisponíveis.'));assert.equal(h.text().includes('Nenhum aviso para este filtro'),false);assert.ok(document.querySelector('[role=alert]'));}
+  try{const nav=[...document.querySelectorAll('.nav-item')].find(item=>item.querySelector('span')?.textContent==='Avisos');await h.flush(()=>nav.click());assert.ok(h.text().includes('Avisos indisponíveis.'));assert.equal(h.text().includes('Nenhum aviso para este filtro'),false);assert.ok(document.querySelector('[role=alert]'));}
   finally{await h.close();}
 });
 
@@ -747,6 +751,68 @@ test('AUDIT-FIX A04: 401 concorrente invalida identidade pendente e respostas an
     assert.equal(document.querySelector('[data-testid=admin]'),null);
     assert.equal(h.text().includes(user.nome),false);assert.equal(h.text().includes('Dado antigo'),false);
   }finally{await h.close();}
+});
+
+test('FINAL.1 dashboard consulta resumo, atualiza sem falso zero e esconde controles ficticios',async()=>{
+ const pending=deferred();let failed=false;
+ const summary={obras:5,total_exemplares:7,disponiveis:4,emprestados:2,indisponiveis:1,manutencao:1,baixados:0,danificados:0,atrasados:1,reservas_pendentes:2,leitores:2,leitores_habilitados:2,atualizado_em:'2026-11-19T12:00:00Z'};
+ const h=await harness(async url=>url==='/api/me'?response(200,user):failed?response(503,{message:'Estoque indisponivel'}):pending.promise,true);
+ try{
+  assert.ok(h.text().includes('Consultando estoque'));
+  await h.flush(()=>pending.resolve(response(200,summary)));
+  assert.equal(document.querySelectorAll('.library-metrics dd').length,12);
+  assert.ok(h.text().includes('Disponíveis fisicamente'));
+  assert.equal(document.querySelector('.nav-badge'),null);
+  assert.ok([...document.querySelectorAll('.nav-item')].some(b=>b.textContent==='Reservas'));
+  failed=true;await h.click('Atualizar indicadores');
+  assert.ok(h.text().includes('Estoque indisponivel'));assert.equal(document.querySelector('.library-metrics'),null);
+  await h.click('Configurações');
+  assert.equal(document.querySelectorAll('[role="switch"]').length,4);
+  assert.equal(h.text().includes('1.284'),false);
+  assert.equal(h.button('Simular exportação de dados'),undefined);
+ }finally{await h.close();}
+});
+
+test('FINAL.1 ficha da equipe combina leitor, emprestimos e reservas pelas APIs autorizadas',async()=>{
+ const calls=[];
+ const h=await harness(async url=>{
+  calls.push(url);if(url==='/api/me')return response(200,user);
+  if(url.includes('/leitores?'))return response(200,{items:[{id:'23',nome:'Leitor Final QA',ativo:true,habilitado:true,versao:1}],total:1,pagina:1,limite:10});
+  if(url.endsWith('/leitores/23'))return response(200,{id:'23',nome:'Leitor Final QA',email:'ficha@example.invalid',ativo:true,habilitado:true});
+  if(url.includes('/emprestimos?'))return response(200,{items:[{id:'1',titulo:'Obra emprestada QA',estado:'ativo',previsto_em:'2026-11-20T12:00:00Z'}],total:1,pagina:1,limite:50});
+  if(url.includes('/reservas?'))return response(200,{items:[{id:'2',titulo:'Obra reservada QA',estado:'aguardando',posicao:1}],total:1,pagina:1,limite:50});
+  return response(503,{message:'Sem resumo neste teste'});
+ },true);
+ try{
+  await h.click('Leitores');await h.click('Ficha e histórico de Leitor Final QA');
+  assert.ok(h.text().includes('Obra emprestada QA'));assert.ok(h.text().includes('Obra reservada QA'));
+  assert.ok(calls.some(url=>url.includes('leitor_id=23')));
+  assert.equal(document.activeElement.textContent,'Ficha e circulação do leitor');
+  await h.click('Fechar ficha detalhada');assert.equal(h.text().includes('Obra emprestada QA'),false);
+ }finally{await h.close();}
+});
+
+test('FINAL.1 formulario de livro envia ano e sinopse, aguarda API e atualiza lista',async()=>{
+ const pending=deferred();let saved=null,submitted=null;
+ const book={id:'55',titulo:'Livro Formulario QA',autores:['Autor QA'],categoria:'Estudo QA',ano:2026,sinopse:'Sinopse QA',isbn:null,editora:null,versao:1,total_exemplares:0,circulaveis:0,disponiveis:0};
+ const h=await harness(async(url,options)=>{
+  if(url==='/api/me')return response(200,user);
+  if(url==='/api/csrf')return response(200,{csrfToken:'a'.repeat(64)});
+  if(url.endsWith('/resumo'))return response(503,{message:'Resumo separado'});
+  if(options?.method==='POST'){submitted=JSON.parse(options.body);return pending.promise;}
+  return response(200,{items:saved?[book]:[],total:saved?1:0,pagina:1,limite:10});
+ },true);
+ try{
+  await h.click('Acervo');await h.click('Cadastrar livro');
+  for(const [label,value]of [['Título',book.titulo],['Autores',book.autores[0]],['Categoria',book.categoria],['Ano','2026'],['Sinopse',book.sinopse]]){
+   const field=[...h.button('Salvar livro').closest('form').querySelectorAll('label')].find(l=>l.textContent.startsWith(label)).querySelector('input,textarea');
+   await h.flush(()=>{const proto=field.tagName==='TEXTAREA'?window.HTMLTextAreaElement.prototype:window.HTMLInputElement.prototype;Object.getOwnPropertyDescriptor(proto,'value').set.call(field,value);field.dispatchEvent(new window.Event('input',{bubbles:true}));});
+  }
+  await h.click('Salvar livro');assert.ok(submitted);assert.equal(submitted.ano,'2026');assert.equal(submitted.sinopse,book.sinopse);
+  assert.equal(h.button('Salvar livro').disabled,true);assert.equal(h.text().includes('Operação confirmada pela biblioteca.'),false);
+  await h.flush(()=>{saved=book;pending.resolve(response(201,book));});
+  assert.ok(h.text().includes(book.titulo));assert.ok(h.text().includes('2026'));assert.ok(h.text().includes(book.sinopse));
+ }finally{await h.close();}
 });
 
 test('React com HTTP/PostgreSQL reais identifica aluno, usa CSRF e perde acesso após logout', {

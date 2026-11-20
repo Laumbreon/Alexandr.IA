@@ -22,7 +22,7 @@ test('configuração rejeita produção, host remoto e banco não autorizado', (
 
 test('migrations possuem ordem e checksums estáveis', async () => {
   const migrations = await readMigrations();
-  assert.deepEqual(migrations.map((m) => m.name), ['001_create_usuarios.sql', '002_create_alunos.sql', '003_create_sessoes.sql', '004_create_acervo.sql', '005_create_vinculo_leitor.sql', '006_create_circulacao.sql', '007_create_reservas.sql']);
+  assert.deepEqual(migrations.map((m) => m.name), ['001_create_usuarios.sql', '002_create_alunos.sql', '003_create_sessoes.sql', '004_create_acervo.sql', '005_create_vinculo_leitor.sql', '006_create_circulacao.sql', '007_create_reservas.sql', '008_complete_catalogo_estoque.sql']);
   for (const migration of migrations) {
     assert.equal(migration.checksum, createHash('sha256').update(migration.sql).digest('hex'));
   }

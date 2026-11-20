@@ -7,4 +7,8 @@
 .library-view .simple-page-card { padding: 1.25rem; margin-block: 1rem; }
 .library-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-block: 1rem; }
 .library-view button { margin: .25rem; }
+.library-metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:1rem; }
+.library-metrics dd { font-size:2rem;font-weight:700;margin:.5rem 0 0; }
+.library-fields textarea { width:100%;min-height:7rem;border:1px solid var(--muted);border-radius:.5rem;padding:.7rem;background:var(--surface);color:var(--ink);font:inherit; }
+.library-view .simple-page-card { min-width:0;overflow-wrap:anywhere; }
 .library-fields input[type="checkbox"] { width: auto; justify-self: start; }

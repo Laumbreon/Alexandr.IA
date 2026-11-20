@@ -7,6 +7,7 @@ const readers = require('./readers');
 const circulation = require('./circulation');
 const reservations = require('./reservations');
 const notices = require('./notices');
+const stock = require('./stock');
 const { validateCadastro } = require('../validators/cadastro.validator');
 const { createCadastroService } = require('../services/cadastro.service');
 
@@ -19,6 +20,8 @@ function libraryRouter(getPool, sessions, env) {
   router.use(express.json({ limit: '16kb', strict: true }));
   const staff = requireRoles('bibliotecario','administrador');
   const register = createCadastroService(getPool);
+  router.get('/resumo',staff,endpoint((r)=>stock.summary(getPool(),r.query)));
+  router.get('/exemplares/:id/historico',staff,endpoint((r)=>stock.copyHistory(getPool(),r.params.id,r.query)));
   router.get('/avisos',endpoint((r)=>notices.listNotices(getPool(),r.query,r.user,env)));
   router.get('/reservas',endpoint((r)=>reservations.listReservations(getPool(),r.query,r.user)));
   router.get('/reservas/:id',endpoint((r)=>reservations.reservation(getPool(),r.params.id,r.user)));
@@ -43,8 +46,8 @@ function libraryRouter(getPool, sessions, env) {
   router.post('/livros', staff, endpoint((r) => catalog.saveBook(getPool(), r.body)));
   router.put('/livros/:id', staff, endpoint((r) => catalog.saveBook(getPool(), r.body, r.params.id)));
   router.get('/livros/:id/exemplares', endpoint((r) => catalog.copies(getPool(), r.params.id, r.query)));
-  router.post('/livros/:id/exemplares', staff, endpoint((r) => catalog.addCopy(getPool(), r.params.id, r.body)));
-  router.put('/exemplares/:id', staff, endpoint((r) => catalog.updateCopy(getPool(), r.params.id, r.body)));
+  router.post('/livros/:id/exemplares', staff, endpoint((r) => catalog.addCopy(getPool(), r.params.id, r.body,r.user)));
+  router.put('/exemplares/:id', staff, endpoint((r) => catalog.updateCopy(getPool(), r.params.id, r.body,r.user)));
   router.use((error, req, res, next) => {
     if (error.type === 'entity.too.large') return res.status(413).json({ success:false,message:'A requisição da biblioteca excede 16 KiB.' });
     if (error.status === 400) return res.status(400).json({ success:false,message:'JSON inválido.' });

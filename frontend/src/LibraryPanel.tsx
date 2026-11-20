@@ -232,6 +232,7 @@ export default function LibraryPanel({ user, sessionControls, demo = false, sect
   user: User; sessionControls: ReactNode; demo?: boolean; sections?: Record<string, ReactNode>;
 }) {
   const preferencePrefix = demo ? "alexandria-pages-demo" : "bibliotech";
+  const navigationItems=demo?navItems:[...navItems.filter(item=>item.label!=="Relatórios"),{label:"Reservas",icon:"clock" as IconName},{label:"Avisos",icon:"bell" as IconName},...navItems.filter(item=>item.label==="Relatórios")];
   const [activeNav, setActiveNav] = useState("Visão geral");
   const [remaining, setRemaining] = useState(2 * 60 * 60 + 14 * 60 + 37);
   const [notice, setNotice] = useState<string | null>(null);
@@ -304,7 +305,7 @@ export default function LibraryPanel({ user, sessionControls, demo = false, sect
 
         <nav className="sidebar-nav" aria-label="Navegação principal">
           <div className="nav-label">MENU</div>
-          {navItems.map((item) => (
+          {navigationItems.map((item) => (
             <button
               type="button"
               className={`nav-item ${activeNav === item.label ? "active" : ""}`}
@@ -317,7 +318,7 @@ export default function LibraryPanel({ user, sessionControls, demo = false, sect
             >
               <Icon name={item.icon} size={19} />
               <span>{item.label}</span>
-              {item.label === "Empréstimos" && <span className="nav-badge">12</span>}
+              {demo && item.label === "Empréstimos" && <span className="nav-badge">12</span>}
             </button>
           ))}
         </nav>
@@ -368,9 +369,9 @@ export default function LibraryPanel({ user, sessionControls, demo = false, sect
             >
               <Icon name={darkMode ? "sun" : "moon"} size={20} />
             </button>
-            <button type="button" className="icon-button" aria-label="Notificações (em desenvolvimento)" disabled title="Em desenvolvimento">
+            <button type="button" className="icon-button" aria-label={demo?'Notificações (em desenvolvimento)':'Abrir avisos internos'} disabled={demo} title={demo?'Em desenvolvimento':'Avisos internos'} onClick={()=>{if(!demo){setActiveNav('Avisos');menu.close('heading');}}}>
               <Icon name="bell" size={20} />
-              <span className="notification-dot" />
+              {demo&&<span className="notification-dot" />}
             </button>
             <div className="profile">
               <div className="avatar">{user.nome.split(/\s+/).slice(0, 2).map((part) => [...part][0]).join("").toUpperCase()}</div>
@@ -387,8 +388,8 @@ export default function LibraryPanel({ user, sessionControls, demo = false, sect
         <div className="content">
           <section className="privacy-notice" aria-label="Limites desta demonstração">
             <div>
-              <strong>{!demo && sections?.[activeNav] ? "Biblioteca — dados do servidor" : demo ? "Demonstração acadêmica — dados simulados" : "Painel demonstrativo — sem integração de dados"}</strong>
-              <span>{!demo && sections?.[activeNav] ? "Esta seção usa dados reais do banco local. As demais áreas identificadas como demonstrativas continuam fictícias." : demo ? "Visita livre, sem autenticação, API ou banco de dados. Todos os registros e operações são fictícios. Não informe dados pessoais." : "A identidade do cabeçalho vem da sessão. Os registros de biblioteca são fictícios e as ações bibliotecárias são simuladas. Não informe contatos reais."}</span>
+              <strong>{!demo ? "Biblioteca — dados do servidor" : "Demonstração acadêmica — dados simulados"}</strong>
+              <span>{!demo ? "Operações de biblioteca consultam o servidor. Preferências visuais são locais; recursos indisponíveis estão identificados." : "Visita livre, sem autenticação, API ou banco de dados. Todos os registros e operações são fictícios. Não informe dados pessoais."}</span>
             </div>
           </section>
           {sections?.[activeNav] || (activeNav === "Empréstimos" ? (
@@ -624,9 +625,9 @@ export default function LibraryPanel({ user, sessionControls, demo = false, sect
                 <div>
                   <div className="eyebrow">PREFERÊNCIAS E SEGURANÇA</div>
                   <h1 ref={menu.heading} tabIndex={-1} className="page-title">Configurações</h1>
-                  <div className="page-subtitle">Personalize a experiência e gerencie a proteção dos dados da biblioteca.</div>
+                  <div className="page-subtitle">Personalize a experiência visual neste navegador.</div>
                 </div>
-                <div className="settings-status"><Icon name="check" size={17} /> Protótipo demonstrativo</div>
+                <div className="settings-status"><Icon name="check" size={17} /> {demo?'Protótipo demonstrativo':'Preferências locais'}</div>
               </div>
 
               <div className="settings-layout">
@@ -699,7 +700,7 @@ export default function LibraryPanel({ user, sessionControls, demo = false, sect
                     </div>
                   </section>
 
-                  <section className="settings-card">
+                  {demo&&<section className="settings-card">
                     <div className="settings-card-header">
                       <div className="settings-header-icon privacy"><Icon name="check" size={21} /></div>
                       <div>
@@ -759,10 +760,11 @@ export default function LibraryPanel({ user, sessionControls, demo = false, sect
                         Simular solicitação de exclusão
                       </button>
                     </div>
-                  </section>
+                  </section>}
+                  {!demo&&<p>Gestão institucional de privacidade, exportação, exclusão e contatos ainda não implementada. Estes ajustes visuais não alteram permissões ou dados no banco.</p>}
                 </div>
 
-                <aside className="settings-side">
+                {demo&&<aside className="settings-side">
                   <section className="contact-card">
                     <div className="contact-symbol"><Icon name="bell" size={23} /></div>
                     <h2 className="section-title">Contato de emergência</h2>
@@ -816,7 +818,7 @@ export default function LibraryPanel({ user, sessionControls, demo = false, sect
                       Simular política de privacidade <Icon name="arrow" size={15} />
                     </button>
                   </section>
-                </aside>
+                </aside>}
               </div>
             </>
           ) : (
